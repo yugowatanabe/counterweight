@@ -1,0 +1,26 @@
+{
+  "name": "Counterweight",
+  "version": "1.0",
+  "description": "Discover different persepectives on an event across news sources.",
+  "permissions": ["declarativeContent", "tabs", "storage"],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "page_action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "images/balloon16.png",
+      "32": "images/balloon32.png",
+      "48": "images/balloon48.png",
+      "128": "images/balloon128.png"
+    }
+  },
+  "icons": {
+    "16": "images/balloon16.png",
+    "32": "images/balloon32.png",
+    "48": "images/balloon48.png",
+    "128": "images/balloon128.png"
+  },
+  "manifest_version": 2
+}
