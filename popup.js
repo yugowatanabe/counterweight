@@ -11,6 +11,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     // clean tab title
     title = title.split(' - ')[0];
+    title = title.split(' | ')[0];
     chrome.storage.local.set({title: title});
     title = title.replace(/[^\w\s]/gi, '').toLowerCase();
     bg.console.log("Clean title: " + title);
@@ -71,6 +72,21 @@ document.addEventListener("DOMContentLoaded", function(event) {
         chrome.storage.local.set({articles: result});
 
         // get the bias of each new source for the top articles
+        // ...
+
+        // list results in popup.html
+        var resultsList = document.getElementById('results');
+        var i;
+        for (i = 0; i < 5; i++) {
+          var node = document.createElement("LI");
+          var text = "<img src='" + result[i].urlToImage + "' style='height:30px;'><br>";
+          text += "<a href='" + result[i].url + "'>";
+          text += result[i].source['name'] + "</a>";
+          text += ": " + result[i].title;
+          node.innerHTML = text;
+          // node.appendChild(document.createTextNode(text));
+          resultsList.appendChild(node);
+        }
       });
     });
   });
