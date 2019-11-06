@@ -71,28 +71,32 @@ document.addEventListener("DOMContentLoaded", function(event) {
         bg.console.log(result);
         chrome.storage.local.set({articles: result});
 
-        // get the bias of each new source for the top articles
-        // ...
-
-        // list results in popup.html
-        var resultsList = document.getElementById('results');
-        var i;
-        for (i = 0; i < 5; i++) {
-          var node = document.createElement("LI");
-          var text = "<img src='" + result[i].urlToImage + "' style='height:30px;'><br>";
-          text += "<a href='" + result[i].url + "'>";
-          text += result[i].source['name'] + "</a>";
-          text += ": " + result[i].title;
-          node.innerHTML = text;
-          // node.appendChild(document.createTextNode(text));
-          resultsList.appendChild(node);
-        }
+        // list results in popup.html, listed with bias
+        chrome.storage.local.get(['source_biases'], function(get_result) {
+          var biases_dict = get_result.source_biases;
+          var resultsList = document.getElementById('results');
+          var i;
+          for (i = 0; i < 5; i++) {
+            // create list element
+            var node = document.createElement("LI");
+            // get image of article
+            var text = "<img src='" + result[i].urlToImage + "' style='height:30px;'><br>";
+            // get url to article
+            text += "<a href='" + result[i].url + "'>";
+            // get source name
+            var source = result[i].source['name'];
+            text += source + "</a>";
+            text += ": " + result[i].title + "<br>";
+            // if we know bias of source (is in keys of biases_dict), print it
+            if (biases_dict[source] !== undefined) {
+              text += "(Bias: "   + biases_dict[source].bias + ", ";
+              text += "Quality: " + biases_dict[source].quality + ")<br>";
+            }
+            node.innerHTML = text;
+            resultsList.appendChild(node);
+          }
+        });
       });
     });
   });
 });
-
-// function showResults(results) {
-//     var resultsElement = document.getElementById("results");
-//     resultsElement.innerText = results ? "This page uses jQuery" : "This page does NOT use jQuery";
-// }

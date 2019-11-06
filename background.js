@@ -1,5 +1,27 @@
+// function converting CSV text to JSON object
+function csv_to_json(text){
+  var lines = text.split("\n");
+  var headers = lines[0].split(",");
+
+  var json_objs = {};
+  for (var i=1; i < lines.length; i++){
+    var values = lines[i].split(",");
+    json_objs[values[0]] = {"bias":    parseFloat(values[1]),
+                            "quality": parseFloat(values[2])};
+  }
+
+  return json_objs;
+}
+
 chrome.runtime.onInstalled.addListener(function(details) {
-  // get available news sources
+  // read in biases file, save as JSON
+  fetch('csv/sources.csv').then(response => response.text()).then(function(text){
+    var sources_json = csv_to_json(text);
+    console.log(sources_json);
+    chrome.storage.local.set({source_biases: sources_json});
+  });
+
+  // get available news sources from API
   var url = 'https://newsapi.org/v2/sources?' +
     'apiKey=afb1d15f19724f608492f69997c94820';
   var req = new Request(url);
