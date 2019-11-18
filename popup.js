@@ -7,7 +7,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     // get tab title
     var title = tabs[0].title;
-    bg.console.log("Tab title: " + title);
+    if (bg) {
+      bg.console.log("Tab title: " + title);
+    }
 
     // clean tab title
     title = title.split(' - ')[0];
@@ -92,9 +94,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
             text += ": " + result[i].title + "<br>";
             // if we know bias of source (is in keys of biases_dict), print it
             if (biases_dict[source] !== undefined) {
-              var bias = (biases_dict[source].bias*2 + 42)/84*100;
+              var bias = (biases_dict[source].bias*2 + 42)/84*100;  // map bias to a number between 0-84
               var quality = biases_dict[source].quality;
-              var spectrum_elem = document.createElement("DIV");
+              var spectrum_elem = document.createElement("DIV");  // put icon along spectrum bar
               spectrum_elem.style =   "width: 3px;\
                                       height: 15px;\
                                       background-color: #000000;\
