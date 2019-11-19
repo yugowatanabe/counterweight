@@ -1,5 +1,5 @@
 {
-  "name": "Counterweight",
+  "name": "CounterWeight",
   "version": "1.0",
   "description": "Discover different persepectives on an event across news sources.",
   "permissions": ["declarativeContent", "tabs", "storage"],

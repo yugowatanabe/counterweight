@@ -1,3 +1,7 @@
+body {
+  background-color: #f2f2f2;
+}
+
 /* blue to red gradient spectrum bar */
 #bar {
   width: 100%;
@@ -6,6 +10,74 @@
   border-radius: 25px;
   outline: none;
   opacity: 0.8;
+}
+
+#container {
+  height: 250px;
+  margin-top: 30px;
+  padding-left: 20px;
+  padding-right: 0px;
+  /* border: 2px solid black; */
+  background-color: #e6e6e6;
+}
+
+.src_name {
+  margin-bottom: 0px;
+}
+
+.src_qual {
+  margin-top: 5px;
+  margin-bottom: 15px;
+  font-size: 13px;
+}
+
+.description {
+  margin-top: 3px;
+  line-height: 18px;
+}
+
+a {
+  font-size: 13px;
+  font-weight: bold;
+  text-decoration: none;
+  color: #111111;
+}
+
+img {
+  float: left;
+  width: 200px;
+  max-height: 100px;
+  padding-right: 15px;
+}
+
+.article {
+  height: 130px;
+  padding-right: 15px;
+}
+
+::-webkit-scrollbar-track
+{
+	/* -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); */
+	background-color: #F5F5F5;
+}
+
+::-webkit-scrollbar
+{
+	width: 10px;
+	background-color: #F5F5F5;
+}
+
+::-webkit-scrollbar-thumb
+{
+	background-color: #F90;
+	background-image: -webkit-linear-gradient(45deg,
+	                                          rgba(255, 255, 255, .2) 25%,
+											  transparent 25%,
+											  transparent 50%,
+											  rgba(255, 255, 255, .2) 50%,
+											  rgba(255, 255, 255, .2) 75%,
+											  transparent 75%,
+											  transparent)
 }
 
 /* .element {

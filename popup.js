@@ -111,14 +111,17 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 source_div.setAttribute("class", "src_results");
                 source_div.style.display = "none";
                 source_div.style.height = "inherit";
-                source_div.style.overflow = "scroll";
+                source_div.style.overflowY = "auto";
 
-                var source_h = document.createElement("H4");  // hold source name
+                var source_h = document.createElement("H2");  // hold source name
                 source_h.setAttribute("class", "src_name");
                 source_h.innerHTML = source;
                 var source_q = document.createElement("P");  // hold source quality
                 source_q.setAttribute("class", "src_qual");
-                source_q.innerHTML = "Source quality: " + biases_dict[source].quality;
+                source_q.innerHTML = "Quality:&nbsp;&nbsp;";
+                let color = get_color(Math.round(biases_dict[source].quality)/64.);
+                let r = color[0]; let g = color[1]; let b = color[2];
+                source_q.innerHTML += parse("<span style='color:rgba(%s,%s,%s);'>", r, g, b) + Math.round(biases_dict[source].quality) + "</span>";
 
                 source_div.appendChild(source_h);
                 source_div.appendChild(source_q);
@@ -133,9 +136,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                                 height: 15px;\
                                 background-color: #8c8c8c;\
                                 display: inline-flex;\
-                                // border: 2px solid black;\
                                 position: absolute;\
-                                // top: 20px;\
                                 left: "+ bias + "\%;";
                 bar.appendChild(tick);
               }
@@ -144,12 +145,16 @@ document.addEventListener("DOMContentLoaded", function(event) {
               var node = document.createElement("P");
               node.setAttribute("class", "article");
               // get image of article
-              var text = "<img src='" + result[i].urlToImage + "' style='height:30px;'>";
+              var text = "<img src='" + result[i].urlToImage + "'>";
               // get url to article
               text += "<a href='" + result[i].url + "'>";
               text += result[i].title + "</a>";
-              text += "<p class='description'>" + result[i].description + "</p>";
-              text += "<p class='publishedat'>" + result[i].publishedAt + "</p>";
+              // get published date/time
+              var time = result[i].publishedAt.match(/(.*)-(.*)-(.*)T(.*):(.*):(.*)Z/);
+              var event = new Date(Date.UTC(time[1], time[2], time[3], time[4], time[5], time[6]));
+              time =  event.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+              text += "<p class='description'><i>" + time + "</i>&nbsp;&nbsp;-&nbsp;";
+              text += result[i].description + "</p>";
               // text += "(Bias: "   + biases_dict[source].bias + ", ";
               // text += "Quality: " + biases_dict[source].quality + ")<br>";
 
@@ -164,6 +169,20 @@ document.addEventListener("DOMContentLoaded", function(event) {
           for (var i = 0; i < ticks.length; i++) {
             ticks[i].addEventListener('mouseover', tick_mouseover, false);
           }
+
+          // manually trigger event on one of the divs to display on start
+          var event; // The custom event that will be created
+          if(document.createEvent){
+              event = document.createEvent("HTMLEvents");
+              event.initEvent("mouseover", true, true);
+              event.eventName = "mouseover";
+              ticks[ticks.length-1].dispatchEvent(event);
+          } else {
+              event = document.createEventObject();
+              event.eventName = "mouseover";
+              event.eventType = "mouseover";
+              ticks[ticks.length-1].fireEvent("on" + event.eventType, event);
+          }
         });
       });
     });
@@ -176,10 +195,11 @@ var tick_mouseover = function () {
   var ticks = document.getElementsByClassName("tick");
   for (var i = 0; i < ticks.length; i++) {
     ticks[i].style.height = "15px";
+    ticks[i].style.backgroundColor = "#8c8c8c";
   }
   // make only hovered tick large
   this.style.height = "20px";
-  this.style.color = "#000000";
+  this.style.backgroundColor = "#248f24";
 
   // get all source results and hide all of them
   var src_results = document.getElementsByClassName("src_results");
@@ -192,4 +212,24 @@ var tick_mouseover = function () {
   var source = tick_id.substring(0, tick_id.length-4);
   var source_div = document.getElementById(source);
   source_div.style.display = "block";
+}
+
+// function which returns color (red to green) based on weight
+function get_color(weight) {
+  var w1 = weight;
+  var w2 = 1 - w1;
+  var color1 = [0,  180, 0];
+  var color2 = [200,  0, 0];
+  var rgb = [Math.round(color1[0] * w1 + color2[0] * w2),
+     Math.round(color1[1] * w1 + color2[1] * w2),
+     Math.round(color1[2] * w1 + color2[2] * w2)];
+  return rgb;
+}
+
+// function helping to format string
+function parse(str) {
+    var args = [].slice.call(arguments, 1),
+        i = 0;
+
+    return str.replace(/%s/g, () => args[i++]);
 }
