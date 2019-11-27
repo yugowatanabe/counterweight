@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     // get tab title
     var title = tabs[0].title;
-    var source_url = tabs[0].url; 
+    var source_url = tabs[0].url;
     if (bg) {
       bg.console.log("Tab title: " + title);
     }
@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         bg.console.log("THESE ARE THE ARTICLES");
         bg.console.log(articles);
 
-        
+
         // code to fetch order of articles
         var url_fetch_summary = 'http://127.0.0.1:5000/article-summary?' + 'url=' + source_url;
         articles.forEach(function(article){
@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             bg.console.log("Answer")
             bg.console.log(obj);
             returned_indices = obj;
-         
+
 
         // count number of word matches in target title to each article result
         var counts = [];
@@ -113,6 +113,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
         // list results in popup.html, listed with bias
         chrome.storage.local.get(['source_biases'], function(get_result) {
           var biases_dict = get_result.source_biases;
+            chrome.storage.local.get(['result'], function(get_result) {
+              var results_dict=get_result.result;
+              
+              });
 
           // div which holds the divs illustrating bar along spectrum per article
           var bar = document.getElementById('bar');
@@ -120,7 +124,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
           var i = 0;
           console.log("RESULTS LENGTH", result.length);
           // for all articles with 3 or more matching keywords
-          //while (counts[i] > 2) 
+          //while (counts[i] > 2)
           for(i=0;i<result.length;i++){
             // get source name and id
             var source    = result[i].source['name'];
