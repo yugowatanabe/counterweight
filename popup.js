@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     // get tab title
     var title = tabs[0].title;
+    var source_url = tabs[0].url; 
     if (bg) {
       bg.console.log("Tab title: " + title);
     }
@@ -44,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
       'q=' + title_url + '&' +
       // 'from=' + date + '&' +
       'sortBy=relevancy&' +
-      'pageSize=100&' +
+      'pageSize=10&' +
       'page=1&' +
       'apiKey=afb1d15f19724f608492f69997c94820';
     var req = new Request(url);
@@ -54,35 +55,60 @@ document.addEventListener("DOMContentLoaded", function(event) {
       response.json().then( function(obj) {
         // get array of articles
         articles = obj.articles;
+        bg.console.log("THESE ARE THE ARTICLES");
+        bg.console.log(articles);
+
+        
+        // code to fetch order of articles
+        var url_fetch_summary = 'http://127.0.0.1:5000/article-summary?' + 'url=' + source_url;
+        articles.forEach(function(article){
+          url_fetch_summary += '&list_url=' + article.url;
+        });
+        bg.console.log(url_fetch_summary);
+        var req_summary = new Request(url_fetch_summary);
+        fetch(req_summary).then(function(response) {
+          response.json().then(function(obj) {
+            bg.console.log("Answer")
+            bg.console.log(obj);
+            returned_indices = obj;
+         
 
         // count number of word matches in target title to each article result
         var counts = [];
-        articles.forEach(function(article){
+        // articles.forEach(function(article){
 
-          // get text of article (its title and description)
-          var text = article.title + " " + article.description;
-          text = text.replace(/[^\w\s]/gi, '').toLowerCase();
+        //   // get text of article (its title and description)
+        //   var text = article.title + " " + article.description;
+        //   text = text.replace(/[^\w\s]/gi, '').toLowerCase();
 
-          // for each unique word in the title, check if in article
-          var count = 0;
-          title_unique.forEach(function(title_word){
-            if (text.includes(title_word)) {
-              count = count + 1;
-            }
-          });
-          // save number of words in article matching target title
-          counts.push(count);
-        });
-
-        // sort articles according to number of matches (more matches, higher rank)
-        const result = articles.map((item, index) => [counts[index], item]).sort(([count1], [count2]) => count2 - count1).map(([, item]) => item);
-        counts = counts.sort(function(a, b){return b-a});  // sort counts
-        if (bg) {
+        //   // for each unique word in the title, check if in article
+        //   var count = 0;
+        //   title_unique.forEach(function(title_word){
+        //     if (text.includes(title_word)) {
+        //       count = count + 1;
+        //     }
+        //   });
+        //   // save number of words in article matching target title
+        //   counts.push(count);
+        // });
+        var result = [];
+        if(returned_indices != undefined && returned_indices != null) {
+          bg.console.log("Now figure out what you want to do with the data")
+          for(var i=0; i<returned_indices.length;i++) {
+            result[i] = articles[returned_indices[i]]
+          }
+          bg.console.log("SORTED RESULT")
           bg.console.log(result);
-          bg.console.log(counts);
         }
+        // sort articles according to number of matches (more matches, higher rank)
+        // const result = articles.map((item, index) => [counts[index], item]).sort(([count1], [count2]) => count2 - count1).map(([, item]) => item);
+        // counts = counts.sort(function(a, b){return b-a});  // sort counts
+        // if (bg) {
+        //   bg.console.log(result);
+        //   bg.console.log(counts);
+        // }
 
-        chrome.storage.local.set({articles: result});
+        chrome.storage.local.set({result: result});
 
         // list results in popup.html, listed with bias
         chrome.storage.local.get(['source_biases'], function(get_result) {
@@ -92,9 +118,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
           var bar = document.getElementById('bar');
           var container = document.getElementById('container');
           var i = 0;
-
+          console.log("RESULTS LENGTH", result.length);
           // for all articles with 3 or more matching keywords
-          while (counts[i] > 2) {
+          //while (counts[i] > 2) 
+          for(i=0;i<result.length;i++){
             // get source name and id
             var source    = result[i].source['name'];
             var source_id = result[i].source['id'];
@@ -161,7 +188,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
               node.innerHTML = text;
               source_div.appendChild(node);
             }
-            i++;
+            //i++;
           }
 
           // add event listeners to ticks
@@ -183,6 +210,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
               event.eventType = "mouseover";
               ticks[ticks.length-1].fireEvent("on" + event.eventType, event);
           }
+            });
+          });
         });
       });
     });
