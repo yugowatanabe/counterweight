@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
           var biases_dict = get_result.source_biases;
             chrome.storage.local.get(['result'], function(get_result) {
               var results_dict=get_result.result;
-              
+
               });
 
           // div which holds the divs illustrating bar along spectrum per article
@@ -265,4 +265,17 @@ function parse(str) {
         i = 0;
 
     return str.replace(/%s/g, () => args[i++]);
+}
+
+document.onreadystatechange = function () {
+  var state = document.readyState
+  if (state == 'interactive') {
+       document.getElementById('container').style.visibility="hidden";
+  } else if (state == 'complete') {
+      setTimeout(function(){
+         document.getElementById('interactive');
+         document.getElementById('load').style.visibility="hidden";
+         document.getElementById('container').style.visibility="visible";
+      },1000);
+  }
 }
