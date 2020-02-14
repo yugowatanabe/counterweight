@@ -1,14 +1,27 @@
 
 document.addEventListener("DOMContentLoaded", function(event) {
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {    
     // get background page for logging
     bg = chrome.extension.getBackgroundPage();
+
+    if (bg) {
+      chrome.identity.getProfileUserInfo(function (info) {
+        bg.console.log(info.email);
+      });
+    }
+
+    // Record Time of Icon Click
+    chrome.storage.local.get(["click_times"], function(res) {
+      times = res["click_times"];
+      times.push(Date());
+      chrome.storage.local.set({"click_times": times});
+    });
 
     // get tab title
     var title = tabs[0].title;
     if (bg) {
       bg.console.log("Tab title: " + title);
+      bg.console.log("URL: " + tabs[0].url);  // Send to server to view article?
     }
 
     // clean tab title
@@ -147,8 +160,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
               // get image of article
               var text = "<img src='" + result[i].urlToImage + "'>";
               // get url to article
-              text += "<a href='" + result[i].url + "'>";
+              text += "<a href='" + result[i].url + "' target='_blank'>";
               text += result[i].title + "</a>";
+
               // get published date/time
               var time = result[i].publishedAt.match(/(.*)-(.*)-(.*)T(.*):(.*):(.*)Z/);
               var event = new Date(Date.UTC(time[1], time[2], time[3], time[4], time[5], time[6]));
@@ -158,7 +172,18 @@ document.addEventListener("DOMContentLoaded", function(event) {
               // text += "(Bias: "   + biases_dict[source].bias + ", ";
               // text += "Quality: " + biases_dict[source].quality + ")<br>";
 
+              // Add Link to go to article
               node.innerHTML = text;
+
+              function add_url(logged_url, bg) {
+                chrome.tabs.create({active: false, url: logged_url});
+
+                // TODO: Send u to server
+                if (bg) {
+                  bg.console.log(logged_url);
+                }
+              }
+              node.addEventListener("click", add_url.bind(null, result[i].url, bg));
               source_div.appendChild(node);
             }
             i++;

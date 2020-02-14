@@ -14,6 +14,8 @@ function csv_to_json(text){
 }
 
 chrome.runtime.onInstalled.addListener(function(details) {
+  chrome.storage.local.set({"click_times": []});
+
   // read in biases file, save as JSON
   fetch('csv/sources.csv').then(response => response.text()).then(function(text){
     var sources_json = csv_to_json(text);
