@@ -1,5 +1,17 @@
 body {
   background-color: #f2f2f2;
+  width: 600px;
+  overflow-y: hidden;
+  padding: 10px;
+}
+
+#export_data {
+  background-color: #9fbb90;
+  padding: 1%;
+}
+
+#export_data:hover {
+  background-color: #738867;
 }
 
 /* blue to red gradient spectrum bar */
