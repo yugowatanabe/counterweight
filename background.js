@@ -15,7 +15,11 @@ function csv_to_json(text){
 
 chrome.runtime.onInstalled.addListener(function(details) {
   // Logging Set Up
-  chrome.storage.local.set({"click_times": [], "clicked_links": [], "hovered_ticks": []});
+  chrome.storage.local.set(
+    { "click_times": [], 
+      "clicked_links": [], 
+      "hovered_ticks": []
+    });
 
   // read in biases file, save as JSON
   fetch('csv/sources.csv').then(response => response.text()).then(function(text){

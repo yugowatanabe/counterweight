@@ -1,15 +1,7 @@
+var debug = false;
 
 document.addEventListener("DOMContentLoaded", function(event) {
-  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {    
-    // get background page for logging
-    bg = chrome.extension.getBackgroundPage();
-
-    // Demonstrate getting email
-    if (bg) {
-      chrome.identity.getProfileUserInfo(function (info) {
-        bg.console.log(info.email);
-      });
-    }
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 
     // Record Time of Icon Click
     chrome.storage.local.get(["click_times"], function(res) {
@@ -18,29 +10,29 @@ document.addEventListener("DOMContentLoaded", function(event) {
       chrome.storage.local.set({"click_times": times});
     });
 
+    // get background page for logging
+    bg = chrome.extension.getBackgroundPage();
+
+    // Demonstrate getting email
+    if (bg && debug) {
+      chrome.identity.getProfileUserInfo(function (info) {
+        bg.console.log(info.email);
+      });
+    }
+
     // get tab title
     var title = tabs[0].title;
-    if (bg) {
+    title = clean_title(title, bg);
+    if (bg && debug) {
       bg.console.log("Tab title: " + title);
       bg.console.log("URL: " + tabs[0].url);  // Send to server to view article?
     }
-    title = clean_title(title, bg);
 
     // search news for keywords in title
-    var title_url = title.replace(/ /g, "%20OR%20"); // title formatted for a search powered by News API
-    var url = 'https://newsapi.org/v2/everything?' +
-      'q=' + title_url + '&' +
-      // 'from=' + date + '&' +
-      'sortBy=relevancy&' +
-      'pageSize=100&' +
-      'page=1&' +
-      'apiKey=afb1d15f19724f608492f69997c94820';
-    var req = new Request(url);
-
     // handle the JSON object returned containing articles
-    var title_unique = format_title(title, bg);
-    fetch(req).then(function(response) {
+    fetch(get_request(title)).then(function(response) {
       response.json().then( function(obj) {
+
         // get array of articles
         articles = obj.articles;
 
@@ -54,6 +46,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
           // for each unique word in the title, check if in article
           var count = 0;
+          var title_unique = format_title(title, bg);
           title_unique.forEach(function(title_word){
             if (text.includes(title_word)) {
               count = count + 1;
@@ -67,12 +60,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
         // sort articles according to number of matches (more matches, higher rank)
         const result = articles.map((item, index) => [counts[index], item]).sort(([count1], [count2]) => count2 - count1).map(([, item]) => item);
         counts = counts.sort(function(a, b){return b-a});  // sort counts
-        if (bg) {
+        if (bg && debug) {
           bg.console.log(result);
           bg.console.log(counts);
         }
-
-        chrome.storage.local.set({articles: result});
 
         // list results in popup.html, listed with bias
         chrome.storage.local.get(['source_biases'], function(get_result) {
@@ -134,16 +125,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
               // create list element for article
               var node = document.createElement("P");
               node.setAttribute("class", "article");
-              // get image of article
               var text = "<img src='" + result[i].urlToImage + "'>";
-              // get url to article
-              text += "<a href='" + result[i].url + "' target='_blank'>";
-              text += result[i].title + "</a>";
-
-              // get published date/time
+              text += "<b>" + result[i].title + "</b>";
               var time = result[i].publishedAt.match(/(.*)-(.*)-(.*)T(.*):(.*):(.*)Z/);
               var event = new Date(Date.UTC(time[1], time[2], time[3], time[4], time[5], time[6]));
-              time =  event.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+              time = event.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
               text += "<p class='description'><i>" + time + "</i>&nbsp;&nbsp;-&nbsp;";
               text += result[i].description + "</p>";
               // text += "(Bias: "   + biases_dict[source].bias + ", ";
@@ -152,23 +138,20 @@ document.addEventListener("DOMContentLoaded", function(event) {
               // Add Link to go to article
               node.innerHTML = text;
 
-              function add_url(logged_url, bg) {
-                chrome.tabs.create({active: false, url: logged_url});
-
-                if (bg) {
-                  bg.console.log(logged_url);
-                }
-
+              function open_url(logged_url) {
                 // Record Time of Icon Click
                 chrome.storage.local.get(["clicked_links"], function(res) {
                   links = res["clicked_links"];
                   links.push([Date(), logged_url]);
                   chrome.storage.local.set({"clicked_links": links});
                 });
+
+                chrome.tabs.create({active: true, url: logged_url});
               }
-              node.addEventListener("click", add_url.bind(null, result[i].url, bg));
+              node.addEventListener("click", open_url.bind(null, result[i].url));
               source_div.appendChild(node);
             }
+            
             i++;
           }
 
@@ -250,22 +233,37 @@ function parse(str) {
 }
 
 
-// Functions to handle title
-
+// Functions to clean title
 function clean_title(title, bg) {
   title = title.split(' - ')[0];
   title = title.split(' | ')[0];
   var head = document.getElementById('head');
   head.innerHTML = "Related to '<i>" + title + "</i>'";
-  chrome.storage.local.set({title: title});
   title = title.replace(/[^\w\s]/gi, '').toLowerCase();
-  if (bg) {
+  if (bg && debug) {
     bg.console.log("Clean title: " + title);
   }
   
   return title;
 }
 
+
+// Create and return a request, given a title
+function get_request(title) {
+  var title_url = title.replace(/ /g, "%20OR%20"); // title formatted for a search powered by News API
+  var url = 'https://newsapi.org/v2/everything?' +
+    'q=' + title_url + '&' +
+    // 'from=' + date + '&' +
+    'sortBy=relevancy&' +
+    'pageSize=100&' +
+    'page=1&' +
+    'apiKey=afb1d15f19724f608492f69997c94820';
+  
+  return new Request(url);
+}
+
+
+// Get title with only unique words
 function format_title(title, bg) {
   // only unique words in title with stopwords removed
   var stopwords = ["about", "a", "above", "above", "across", "after", "afterwards", "again", "against", "all", "almost", "alone", "along", "already", "also","although","always","am","among", "amongst", "amoungst", "amount",  "an", "and", "another", "any","anyhow","anyone","anything","anyway", "anywhere", "are", "around", "as",  "at", "back","be","became", "because","become","becomes", "becoming", "been", "before", "beforehand", "behind", "being", "below", "beside", "besides", "between", "beyond", "bill", "both", "bottom","but", "by", "call", "can", "cannot", "cant", "co", "con", "could", "couldnt", "cry", "de", "describe", "detail", "do", "done", "down", "due", "during", "each", "eg", "eight", "either", "eleven","else", "elsewhere", "empty", "enough", "etc", "even", "ever", "every", "everyone", "everything", "everywhere", "except", "few", "fifteen", "fify", "fill", "find", "fire", "first", "five", "for", "former", "formerly", "forty", "found", "four", "from", "front", "full", "further", "get", "give", "go", "had", "has", "hasnt", "have", "he", "hence", "her", "here", "hereafter", "hereby", "herein", "hereupon", "hers", "herself", "him", "himself", "his", "how", "however", "hundred", "ie", "if", "in", "inc", "indeed", "interest", "into", "is", "it", "its", "itself", "keep", "last", "latter", "latterly", "least", "less", "ltd", "made", "many", "may", "me", "meanwhile", "might", "mill", "mine", "more", "moreover", "most", "mostly", "move", "much", "must", "my", "myself", "name", "namely", "neither", "never", "nevertheless", "next", "nine", "no", "nobody", "none", "noone", "nor", "not", "nothing", "now", "nowhere", "of", "off", "often", "on", "once", "one", "only", "onto", "or", "other", "others", "otherwise", "our", "ours", "ourselves", "out", "over", "own","part", "per", "perhaps", "please", "put", "rather", "re", "same", "see", "seem", "seemed", "seeming", "seems", "serious", "several", "she", "should", "show", "side", "since", "sincere", "six", "sixty", "so", "some", "somehow", "someone", "something", "sometime", "sometimes", "somewhere", "still", "such", "system", "take", "ten", "than", "that", "the", "their", "them", "themselves", "then", "thence", "there", "thereafter", "thereby", "therefore", "therein", "thereupon", "these", "they", "thick", "thin", "third", "this", "those", "though", "three", "through", "throughout", "thru", "thus", "to", "together", "too", "top", "toward", "towards", "twelve", "twenty", "two", "un", "under", "until", "up", "upon", "us", "very", "via", "was", "we", "well", "were", "what", "whatever", "when", "whence", "whenever", "where", "whereafter", "whereas", "whereby", "wherein", "whereupon", "wherever", "whether", "which", "while", "whither", "who", "whoever", "whole", "whom", "whose", "why", "will", "with", "within", "without", "would", "yet", "you", "your", "yours", "yourself", "yourselves", "the"];
@@ -277,7 +275,7 @@ function format_title(title, bg) {
     title_unique = title_unique.replace(re, ' ');
   }
   title_unique = [...new Set(title_unique.split(" "))];
-  if (bg) {
+  if (bg && debug) {
     bg.console.log(title_unique);
   }
 
