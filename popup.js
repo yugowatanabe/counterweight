@@ -220,6 +220,13 @@ var tick_mouseover = function () {
   var source = tick_id.substring(0, tick_id.length-4);
   var source_div = document.getElementById(source);
   source_div.style.display = "block";
+
+  // Record Time of Icon Click
+  chrome.storage.local.get(["hovered_ticks"], function(res) {
+    hovers = res["hovered_ticks"];
+    hovers.push([Date(), tick_id]);
+    chrome.storage.local.set({"hovered_ticks": hovers});
+  });
 }
 
 // function which returns color (red to green) based on weight
