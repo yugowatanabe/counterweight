@@ -18,7 +18,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
   chrome.storage.local.set(
     { "click_times": [], 
       "clicked_links": [], 
-      "hovered_ticks": []
+      "hovered_ticks": [],
     });
 
   // read in biases file, save as JSON

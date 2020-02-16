@@ -143,10 +143,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 chrome.storage.local.get(["clicked_links"], function(res) {
                   links = res["clicked_links"];
                   links.push([Date(), logged_url]);
+                  if (bg) {
+                    bg.console.log(links);
+                  }
                   chrome.storage.local.set({"clicked_links": links});
-                });
 
-                chrome.tabs.create({active: true, url: logged_url});
+                  // Open clicked link
+                  chrome.tabs.create({active: true, url: logged_url});
+                });
               }
               node.addEventListener("click", open_url.bind(null, result[i].url));
               source_div.appendChild(node);
