@@ -19,6 +19,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
     { "click_times": [],
       "clicked_links": [],
       "hovered_ticks": [],
+      "text_selects": [],
       "highlightedText": ""
     });
 
@@ -42,7 +43,6 @@ chrome.runtime.onInstalled.addListener(function(details) {
       sources = sources.map(x => x.split('://')[1]);
       sources = sources.map(x => x.split('/')[0]);
       sources.push('www.cnn.com','www.bbc.com');
-      // console.log(sources);
 
       // append to rule conditions that host must be news source
       conditions = [];
@@ -86,6 +86,13 @@ chrome.runtime.onInstalled.addListener(function(details) {
     // Keep the highlighted text and flag chrome storage
     chrome.storage.local.get(["highlightedText"], function(res) {
       chrome.storage.local.set({"highlightedText": event.selectionText});
+
+      // Record Time of Icon Click
+      chrome.storage.local.get(["text_selects"], function(res) {
+        texts = res["text_selects"];
+        texts.push([Date(), event.selectionText]);
+        chrome.storage.local.set({"text_selects": texts});
+      });
     });
   });
 });
