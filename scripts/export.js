@@ -1,3 +1,5 @@
+var debug = false;
+
 document.addEventListener("DOMContentLoaded", function(event) {
   document.getElementById('export_data').addEventListener('click', print_data);
 });
@@ -8,7 +10,7 @@ function print_data() {
 
     // click_times: Array of Times
     res["click_times"].forEach(function(item) {
-      text += "click," + item.toString() + "\n";
+      text += "click," + item.toString() + ",\n";
     })
 
     // clicked_links: Array of Arrays [time, url]
@@ -22,10 +24,13 @@ function print_data() {
     })
 
     bg = chrome.extension.getBackgroundPage();
-    if (bg) {
+    if (bg && debug) {
       bg.console.log(text);
-    }  
-  });
+    }
 
-  alert("Check the Background Page for data!");
+    // Write data to file
+    var b = new Blob([text], {type: "text/plain"});
+    var u = URL.createObjectURL(b);
+    chrome.downloads.download({url: u, filename: "data"});
+  });
 }
