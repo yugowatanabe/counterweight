@@ -8,6 +8,7 @@
     "storage",
     "identity",
     "identity.email",
+    "downloads",
     "contextMenus"],
   "oauth2": {
     "client_id": "627474095536-ss1hfl9glimugj5uvghfi0e0eda793kj.apps.googleusercontent.com",
