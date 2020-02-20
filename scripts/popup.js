@@ -20,164 +20,175 @@ document.addEventListener("DOMContentLoaded", function(event) {
       });
     }
 
-    // get tab title
-    var title = tabs[0].title;
-    title = clean_title(title, bg);
-    if (bg && debug) {
-      bg.console.log("Tab title: " + title);
-      bg.console.log("URL: " + tabs[0].url);  // Send to server to view article?
-    }
+    // Get the input text for the article suggestions
+    var title;
+    chrome.storage.local.get(["highlightedText"], function(res) {
+      // Check if the user had custom text input from a right click
+      textHighlight = res["highlightedText"];
+      if (textHighlight) {
+        title = textHighlight;
+        chrome.storage.local.set({"highlightedText": ""});
+      } else {
+        // User did not have custom text input, so get the tab title
+        title = tabs[0].title;
+      }
+      title = clean_title(title, bg);
+      if (bg && debug) {
+        bg.console.log("Tab title: " + title);
+        bg.console.log("URL: " + tabs[0].url);  // Send to server to view article?
+      }
 
-    // search news for keywords in title
-    // handle the JSON object returned containing articles
-    fetch(get_request(title)).then(function(response) {
-      response.json().then( function(obj) {
+      // search news for keywords in title
+      // handle the JSON object returned containing articles
+      fetch(get_request(title)).then(function(response) {
+        response.json().then( function(obj) {
 
-        // get array of articles
-        articles = obj.articles;
+          // get array of articles
+          articles = obj.articles;
 
-        // count number of word matches in target title to each article result
-        var counts = [];
-        articles.forEach(function(article){
+          // count number of word matches in target title to each article result
+          var counts = [];
+          articles.forEach(function(article){
 
-          // get text of article (its title and description)
-          var text = article.title + " " + article.description;
-          text = text.replace(/[^\w\s]/gi, '').toLowerCase();
+            // get text of article (its title and description)
+            var text = article.title + " " + article.description;
+            text = text.replace(/[^\w\s]/gi, '').toLowerCase();
 
-          // for each unique word in the title, check if in article
-          var count = 0;
-          var title_unique = format_title(title, bg);
-          title_unique.forEach(function(title_word){
-            if (text.includes(title_word)) {
-              count = count + 1;
-            }
+            // for each unique word in the title, check if in article
+            var count = 0;
+            var title_unique = format_title(title, bg);
+            title_unique.forEach(function(title_word){
+              if (text.includes(title_word)) {
+                count = count + 1;
+              }
+            });
+
+            // save number of words in article matching target title
+            counts.push(count);
           });
 
-          // save number of words in article matching target title
-          counts.push(count);
-        });
+          // sort articles according to number of matches (more matches, higher rank)
+          const result = articles.map((item, index) => [counts[index], item]).sort(([count1], [count2]) => count2 - count1).map(([, item]) => item);
+          counts = counts.sort(function(a, b){return b-a});  // sort counts
+          if (bg && debug) {
+            bg.console.log(result);
+            bg.console.log(counts);
+          }
 
-        // sort articles according to number of matches (more matches, higher rank)
-        const result = articles.map((item, index) => [counts[index], item]).sort(([count1], [count2]) => count2 - count1).map(([, item]) => item);
-        counts = counts.sort(function(a, b){return b-a});  // sort counts
-        if (bg && debug) {
-          bg.console.log(result);
-          bg.console.log(counts);
-        }
+          // list results in popup.html, listed with bias
+          chrome.storage.local.get(['source_biases'], function(get_result) {
+            var biases_dict = get_result.source_biases;
 
-        // list results in popup.html, listed with bias
-        chrome.storage.local.get(['source_biases'], function(get_result) {
-          var biases_dict = get_result.source_biases;
+            // div which holds the divs illustrating bar along spectrum per article
+            var bar = document.getElementById('bar');
+            var container = document.getElementById('container');
+            var i = 0;
 
-          // div which holds the divs illustrating bar along spectrum per article
-          var bar = document.getElementById('bar');
-          var container = document.getElementById('container');
-          var i = 0;
+            // for all articles with 3 or more matching keywords
+            while (counts[i] > 2) {
+              // get source name and id
+              var source    = result[i].source['name'];
+              var source_id = result[i].source['id'];
 
-          // for all articles with 3 or more matching keywords
-          while (counts[i] > 2) {
-            // get source name and id
-            var source    = result[i].source['name'];
-            var source_id = result[i].source['id'];
+              // if we know bias of source (is in keys of biases_dict), show article
+              if (biases_dict[source] !== undefined) {
 
-            // if we know bias of source (is in keys of biases_dict), show article
-            if (biases_dict[source] !== undefined) {
+                // try to get div with source's id, if doesn't exist, create it
+                var source_div = document.getElementById(source);
+                if (source_div == null) {
+                  // if it doesn't exist, create it
+                  source_div = document.createElement("DIV");
+                  source_div.setAttribute("id", source);
+                  source_div.setAttribute("class", "src_results");
+                  source_div.style.display = "none";
+                  source_div.style.height = "inherit";
+                  source_div.style.overflowY = "auto";
 
-              // try to get div with source's id, if doesn't exist, create it
-              var source_div = document.getElementById(source);
-              if (source_div == null) {
-                // if it doesn't exist, create it
-                source_div = document.createElement("DIV");
-                source_div.setAttribute("id", source);
-                source_div.setAttribute("class", "src_results");
-                source_div.style.display = "none";
-                source_div.style.height = "inherit";
-                source_div.style.overflowY = "auto";
+                  var source_h = document.createElement("H2");  // hold source name
+                  source_h.setAttribute("class", "src_name");
+                  source_h.innerHTML = source;
+                  var source_q = document.createElement("P");  // hold source quality
+                  source_q.setAttribute("class", "src_qual");
+                  source_q.innerHTML = "Quality:&nbsp;&nbsp;";
+                  let color = get_color(Math.round(biases_dict[source].quality)/64.);
+                  let r = color[0]; let g = color[1]; let b = color[2];
+                  source_q.innerHTML += parse("<span style='color:rgba(%s,%s,%s);'>", r, g, b) + Math.round(biases_dict[source].quality) + "</span>";
 
-                var source_h = document.createElement("H2");  // hold source name
-                source_h.setAttribute("class", "src_name");
-                source_h.innerHTML = source;
-                var source_q = document.createElement("P");  // hold source quality
-                source_q.setAttribute("class", "src_qual");
-                source_q.innerHTML = "Quality:&nbsp;&nbsp;";
-                let color = get_color(Math.round(biases_dict[source].quality)/64.);
-                let r = color[0]; let g = color[1]; let b = color[2];
-                source_q.innerHTML += parse("<span style='color:rgba(%s,%s,%s);'>", r, g, b) + Math.round(biases_dict[source].quality) + "</span>";
+                  source_div.appendChild(source_h);
+                  source_div.appendChild(source_q);
+                  container.appendChild(source_div);
 
-                source_div.appendChild(source_h);
-                source_div.appendChild(source_q);
-                container.appendChild(source_div);
+                  // also create tick for source on spectrum bar
+                  var bias = (biases_dict[source].bias*2 + 42)/84*100;  // map bias to a number between 0-84
+                  var tick = document.createElement("DIV");  // put icon along spectrum bar
+                  tick.setAttribute("id", source + "_bar");
+                  tick.setAttribute("class", "tick");
+                  tick.style =   "width: 3px;\
+                                  height: 15px;\
+                                  background-color: #8c8c8c;\
+                                  display: inline-flex;\
+                                  position: absolute;\
+                                  left: "+ bias + "\%;";
+                  bar.appendChild(tick);
+                }
 
-                // also create tick for source on spectrum bar
-                var bias = (biases_dict[source].bias*2 + 42)/84*100;  // map bias to a number between 0-84
-                var tick = document.createElement("DIV");  // put icon along spectrum bar
-                tick.setAttribute("id", source + "_bar");
-                tick.setAttribute("class", "tick");
-                tick.style =   "width: 3px;\
-                                height: 15px;\
-                                background-color: #8c8c8c;\
-                                display: inline-flex;\
-                                position: absolute;\
-                                left: "+ bias + "\%;";
-                bar.appendChild(tick);
+                // create list element for article
+                var node = document.createElement("P");
+                node.setAttribute("class", "article");
+                var text = "<img src='" + result[i].urlToImage + "'>";
+                text += "<b>" + result[i].title + "</b>";
+                var time = result[i].publishedAt.match(/(.*)-(.*)-(.*)T(.*):(.*):(.*)Z/);
+                var event = new Date(Date.UTC(time[1], time[2], time[3], time[4], time[5], time[6]));
+                time = event.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                text += "<p class='description'><i>" + time + "</i>&nbsp;&nbsp;-&nbsp;";
+                text += result[i].description + "</p>";
+                // text += "(Bias: "   + biases_dict[source].bias + ", ";
+                // text += "Quality: " + biases_dict[source].quality + ")<br>";
+
+                // Add Link to go to article
+                node.innerHTML = text;
+
+                function open_url(logged_url) {
+                  // Record Time of Icon Click
+                  chrome.storage.local.get(["clicked_links"], function(res) {
+                    links = res["clicked_links"];
+                    links.push([Date(), logged_url]);
+                    if (bg) {
+                      bg.console.log(links);
+                    }
+                    chrome.storage.local.set({"clicked_links": links});
+
+                    // Open clicked link
+                    chrome.tabs.create({active: false, url: logged_url});
+                  });
+                }
+                node.addEventListener("click", open_url.bind(null, result[i].url));
+                source_div.appendChild(node);
               }
 
-              // create list element for article
-              var node = document.createElement("P");
-              node.setAttribute("class", "article");
-              var text = "<img src='" + result[i].urlToImage + "'>";
-              text += "<b>" + result[i].title + "</b>";
-              var time = result[i].publishedAt.match(/(.*)-(.*)-(.*)T(.*):(.*):(.*)Z/);
-              var event = new Date(Date.UTC(time[1], time[2], time[3], time[4], time[5], time[6]));
-              time = event.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-              text += "<p class='description'><i>" + time + "</i>&nbsp;&nbsp;-&nbsp;";
-              text += result[i].description + "</p>";
-              // text += "(Bias: "   + biases_dict[source].bias + ", ";
-              // text += "Quality: " + biases_dict[source].quality + ")<br>";
-
-              // Add Link to go to article
-              node.innerHTML = text;
-
-              function open_url(logged_url) {
-                // Record Time of Icon Click
-                chrome.storage.local.get(["clicked_links"], function(res) {
-                  links = res["clicked_links"];
-                  links.push([Date(), logged_url]);
-                  if (bg) {
-                    bg.console.log(links);
-                  }
-                  chrome.storage.local.set({"clicked_links": links});
-
-                  // Open clicked link
-                  chrome.tabs.create({active: true, url: logged_url});
-                });
-              }
-              node.addEventListener("click", open_url.bind(null, result[i].url));
-              source_div.appendChild(node);
+              i++;
             }
-            
-            i++;
-          }
 
-          // add event listeners to ticks
-          var ticks = document.getElementsByClassName("tick");
-          for (var i = 0; i < ticks.length; i++) {
-            ticks[i].addEventListener('mouseover', tick_mouseover, false);
-          }
+            // add event listeners to ticks
+            var ticks = document.getElementsByClassName("tick");
+            for (var i = 0; i < ticks.length; i++) {
+              ticks[i].addEventListener('mouseover', tick_mouseover, false);
+            }
 
-          // manually trigger event on one of the divs to display on start
-          var event; // The custom event that will be created
-          if(document.createEvent){
-              event = document.createEvent("HTMLEvents");
-              event.initEvent("mouseover", true, true);
-              event.eventName = "mouseover";
-              ticks[ticks.length-1].dispatchEvent(event);
-          } else {
-              event = document.createEventObject();
-              event.eventName = "mouseover";
-              event.eventType = "mouseover";
-              ticks[ticks.length-1].fireEvent("on" + event.eventType, event);
-          }
+            // manually trigger event on one of the divs to display on start
+            var event; // The custom event that will be created
+            if(document.createEvent){
+                event = document.createEvent("HTMLEvents");
+                event.initEvent("mouseover", true, true);
+                event.eventName = "mouseover";
+                ticks[ticks.length-1].dispatchEvent(event);
+            } else {
+                event = document.createEventObject();
+                event.eventName = "mouseover";
+                event.eventType = "mouseover";
+                ticks[ticks.length-1].fireEvent("on" + event.eventType, event);
+            }
+          });
         });
       });
     });
@@ -247,7 +258,7 @@ function clean_title(title, bg) {
   if (bg && debug) {
     bg.console.log("Clean title: " + title);
   }
-  
+
   return title;
 }
 
@@ -262,7 +273,7 @@ function get_request(title) {
     'pageSize=100&' +
     'page=1&' +
     'apiKey=afb1d15f19724f608492f69997c94820';
-  
+
   return new Request(url);
 }
 

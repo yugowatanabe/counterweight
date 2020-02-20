@@ -16,9 +16,10 @@ function csv_to_json(text){
 chrome.runtime.onInstalled.addListener(function(details) {
   // Logging Set Up
   chrome.storage.local.set(
-    { "click_times": [], 
-      "clicked_links": [], 
+    { "click_times": [],
+      "clicked_links": [],
       "hovered_ticks": [],
+      "highlightedText": ""
     });
 
   // read in biases file, save as JSON
@@ -65,6 +66,26 @@ chrome.runtime.onInstalled.addListener(function(details) {
     // read the rule from storage and apply it on page change
     chrome.storage.local.get(['rule'], function(result) {
       chrome.declarativeContent.onPageChanged.addRules([result.rule]);
+    });
+  });
+
+  // Create the context menu for highlighting custom input text
+  chrome.contextMenus.create({
+    id: "customTextInput",
+    title: "Search for articles related to \"%s\"",
+    contexts: ["selection"]  // ContextType
+  });
+
+  chrome.contextMenus.onClicked.addListener(function(event) {
+    // Gives an option for custom text search on 'right click'
+    bg = chrome.extension.getBackgroundPage();
+    // Log the selected text
+    if (bg) {
+      bg.console.log("Selected Text: %s", event.selectionText);
+    }
+    // Keep the highlighted text and flag chrome storage
+    chrome.storage.local.get(["highlightedText"], function(res) {
+      chrome.storage.local.set({"highlightedText": event.selectionText});
     });
   });
 });
