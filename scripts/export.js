@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 });
 
 function print_data() {
-  chrome.storage.local.get(["click_times", "clicked_links", "hovered_ticks", "text_selects"], function(res) {
+  chrome.storage.local.get(["click_times", "clicked_links", "hovered_ticks", "text_selects", "news_sites_visited"], function(res) {
     var text = 'event,time,url\n';
 
     // click_times: Array of Times
@@ -26,6 +26,11 @@ function print_data() {
     // text_selects: Array of Arrays [time, text]
     res["text_selects"].forEach(function(item) {
       text += "text_select," + item[0].toString() + "," + item[1].toString() + "\n";
+    })
+
+    // news_sites_visited: Array of Arrays [time, text]
+    res["news_sites_visited"].forEach(function(item) {
+      text += "news_sites_visited," + item[0].toString() + "," + item[1].toString() + "\n";
     })
 
     bg = chrome.extension.getBackgroundPage();

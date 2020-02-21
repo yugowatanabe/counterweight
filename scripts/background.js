@@ -20,7 +20,8 @@ chrome.runtime.onInstalled.addListener(function(details) {
       "clicked_links": [],
       "hovered_ticks": [],
       "text_selects": [],
-      "highlightedText": ""
+      "highlightedText": "",
+      "news_sites_visited": []
     });
 
   // read in biases file, save as JSON
@@ -43,6 +44,9 @@ chrome.runtime.onInstalled.addListener(function(details) {
       sources = sources.map(x => x.split('://')[1]);
       sources = sources.map(x => x.split('/')[0]);
       sources.push('www.cnn.com','www.bbc.com');
+
+      // Save the source URLs
+      chrome.storage.local.set({"source_urls": sources});
 
       // append to rule conditions that host must be news source
       conditions = [];
@@ -95,4 +99,27 @@ chrome.runtime.onInstalled.addListener(function(details) {
       });
     });
   });
+});
+
+// Add listener for when a tab is updated
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+  if (changeInfo.status == 'complete' && tab.active) {
+    chrome.storage.local.get(["source_urls"], function(res) {
+      var urls = res["source_urls"];
+      var current_url = tab.url;
+      // Extract the website from the URL
+      current_url = current_url.split('://')[1];
+      current_url = current_url.split('/')[0];
+
+      // Check if the current URL of the tab is a news source
+      if (urls.includes(current_url)) {
+        // Keep track of visits to news sites
+        chrome.storage.local.get(["news_sites_visited"], function(res) {
+          texts = res["news_sites_visited"];
+          texts.push([Date(), current_url]);
+          chrome.storage.local.set({"news_sites_visited": texts});
+        });
+      }
+    });
+  }
 });
