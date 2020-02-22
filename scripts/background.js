@@ -20,6 +20,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
   chrome.storage.local.set(
     { "events": [],
       "highlightedText": "",
+      "open_news": {}
     });
 
   // read in biases file, save as JSON
@@ -112,18 +113,24 @@ chrome.runtime.onInstalled.addListener(function(details) {
   });
 });
 
+
 // Add listener for when a tab is updated
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
   if (changeInfo.status == 'complete' && tab.active) {
     chrome.storage.local.get(["source_urls"], function(res) {
-      var urls = res["source_urls"];
-      var current_url = tab.url;
       // Extract the website from the URL
+      var current_url = tab.url;
       current_url = current_url.split('://')[1];
       current_url = current_url.split('/')[0];
 
       // Check if the current URL of the tab is a news source
-      if (urls.includes(current_url)) {
+      if (res["source_urls"].includes(current_url)) {
+        // Update open_news to include current news source
+        chrome.storage.local.get(['open_news'], function(res) {
+          res['open_news'][tabId] = tab.url;
+          chrome.storage.local.set({"open_news": res['open_news']});
+        })
+
         // Keep track of visits to news sites
         chrome.storage.local.get(["events"], function(res) {
           e = res["events"];
@@ -133,6 +140,27 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
       }
     });
   }
+});
+
+
+// Add listener for when tab is closed
+// May not work when: link on page clicked, browser quit, computer shut down...
+chrome.tabs.onRemoved.addListener(function(tabId, info) {
+  // Get the URL of the closed tab via open_news
+  chrome.storage.local.get(['open_news'], function(res) {
+    var closed_news = res['open_news'][tabId];
+
+    // Log the closed URL
+    chrome.storage.local.get(["events"], function(res) {
+      e = res["events"];
+      e.push([get_date_string(), "closed_news_site", closed_news]);
+      chrome.storage.local.set({"events": e});
+    });
+
+    // Update open_news by deleting the closed tab's information
+    delete res['open_news'][tabId];
+    chrome.storage.local.set({"open_news": res['open_news']});
+  })
 });
 
 
