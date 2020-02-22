@@ -18,12 +18,8 @@ function csv_to_json(text){
 chrome.runtime.onInstalled.addListener(function(details) {
   // Logging Set Up
   chrome.storage.local.set(
-    { "click_times": [],
-      "clicked_links": [],
-      "hovered_ticks": [],
-      "text_selects": [],
+    { "events": [],
       "highlightedText": "",
-      "news_sites_visited": []
     });
 
   // read in biases file, save as JSON
@@ -91,24 +87,27 @@ chrome.runtime.onInstalled.addListener(function(details) {
   chrome.contextMenus.onClicked.addListener(function(event) {
     if (event.menuItemId == "customTextInput") {
       // Gives an option for custom text search on 'right click'
-      bg = chrome.extension.getBackgroundPage();
+
       // Log the selected text
+      bg = chrome.extension.getBackgroundPage();
       if (bg) {
         bg.console.log("Selected Text: %s", event.selectionText);
       }
+
       // Keep the highlighted text and flag chrome storage
       chrome.storage.local.get(["highlightedText"], function(res) {
         chrome.storage.local.set({"highlightedText": event.selectionText});
 
         // Record Time of Icon Click
-        chrome.storage.local.get(["text_selects"], function(res) {
-          texts = res["text_selects"];
-          texts.push([Date(), event.selectionText]);
-          chrome.storage.local.set({"text_selects": texts});
+        chrome.storage.local.get(["events"], function(res) {
+          e = res["events"];
+          e.push([get_date_string(), "text_select", event.selectionText]);
+          chrome.storage.local.set({"events": e});
         });
       });
+
     } else if (event.menuItemId == "export_button") {
-      print_data();
+      create_csv();
     }
   });
 });
@@ -126,43 +125,32 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
       // Check if the current URL of the tab is a news source
       if (urls.includes(current_url)) {
         // Keep track of visits to news sites
-        chrome.storage.local.get(["news_sites_visited"], function(res) {
-          texts = res["news_sites_visited"];
-          texts.push([Date(), current_url]);
-          chrome.storage.local.set({"news_sites_visited": texts});
+        chrome.storage.local.get(["events"], function(res) {
+          e = res["events"];
+          e.push([get_date_string(), "news_site", tab.url]);
+          chrome.storage.local.set({"events": e});
         });
       }
     });
   }
 });
 
-function print_data() {
-  chrome.storage.local.get(["click_times", "clicked_links", "hovered_ticks", "text_selects", "news_sites_visited"], function(res) {
-    var text = 'event,time,url\n';
 
-    // click_times: Array of Times
-    res["click_times"].forEach(function(item) {
-      text += "click," + item.toString() + ",\n";
-    })
+// A Function to create a csv containing all logged data in the 'events' in local storage
+/* 
+  Events logged: 
+  - counterweight icon clicks -> 'click'
+  - links clicked (in popup) -> 'clicked_link'
+  - Ticks hovered (in popup) -> 'tick'
+  - Selected text for searching
+  - News site visited
+*/
+function create_csv() {
+  chrome.storage.local.get(["events"], function(res) {
+    var text = '';
 
-    // clicked_links: Array of Arrays [time, url]
-    res["clicked_links"].forEach(function(item) {
-      text += "link," + item[0].toString() + "," + item[1].toString() + "\n";
-    })
-
-    // hovered_ticks: Array of Arrays [time, tick]
-    res["hovered_ticks"].forEach(function(item) {
-      text += "tick," + item[0].toString() + "," + item[1].toString() + "\n";
-    })
-
-    // text_selects: Array of Arrays [time, text]
-    res["text_selects"].forEach(function(item) {
-      text += "text_select," + item[0].toString() + "," + item[1].toString() + "\n";
-    })
-
-    // news_sites_visited: Array of Arrays [time, text]
-    res["news_sites_visited"].forEach(function(item) {
-      text += "news_sites_visited," + item[0].toString() + "," + item[1].toString() + "\n";
+    res["events"].forEach(function(item) {
+      text += item[0].toString() + "," + item[1].toString() + "," + item[2].toString() + "\n";
     })
 
     bg = chrome.extension.getBackgroundPage();
@@ -175,4 +163,20 @@ function print_data() {
     var u = URL.createObjectURL(b);
     chrome.downloads.download({url: u, filename: "data"});
   });
+}
+
+
+// A utility function to obtain a formatted date
+function get_date_string() {
+  var d = new Date();
+  var year = d.getFullYear();
+  var month = d.getMonth() + 1; // Month is 0-11 but added 1 to make it 1-12
+  var day = d.getDate();
+  var hour = d.getHours();
+  var minute = d.getMinutes();
+  var second = d.getSeconds();
+
+  var tz_offset = d.getTimezoneOffset();
+
+  return `${year}/${month}/${day} ${hour}:${minute}:${second}`;
 }

@@ -4,10 +4,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 
     // Record Time of Icon Click
-    chrome.storage.local.get(["click_times"], function(res) {
-      times = res["click_times"];
-      times.push(Date());
-      chrome.storage.local.set({"click_times": times});
+    chrome.storage.local.get(["events"], function(res) {
+      e = res["events"];
+      e.push([get_date_string(), "click", ""]);
+      chrome.storage.local.set({"events": e});
     });
 
     // get background page for logging
@@ -150,13 +150,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
                 function open_url(logged_url) {
                   // Record Time of Icon Click
-                  chrome.storage.local.get(["clicked_links"], function(res) {
-                    links = res["clicked_links"];
-                    links.push([Date(), logged_url]);
-                    if (bg) {
-                      bg.console.log(links);
-                    }
-                    chrome.storage.local.set({"clicked_links": links});
+                  chrome.storage.local.get(["events"], function(res) {
+                    e = res["events"];
+                    e.push([get_date_string(), "clicked_link", logged_url]);
+                    chrome.storage.local.set({"events": e});
 
                     // Open clicked link
                     chrome.tabs.create({active: false, url: logged_url});
@@ -219,11 +216,11 @@ var tick_mouseover = function () {
   var source_div = document.getElementById(source);
   source_div.style.display = "block";
 
-  // Record Time of Icon Click
-  chrome.storage.local.get(["hovered_ticks"], function(res) {
-    hovers = res["hovered_ticks"];
-    hovers.push([Date(), tick_id]);
-    chrome.storage.local.set({"hovered_ticks": hovers});
+  // Record Time of Hover Tick
+  chrome.storage.local.get(["events"], function(res) {
+    e = res["events"];
+    e.push([get_date_string(), "hovered_tick", tick_id]);
+    chrome.storage.local.set({"events": e});
   });
 }
 
@@ -295,4 +292,20 @@ function format_title(title, bg) {
   }
 
   return title_unique;
+}
+
+
+// A utility function to obtain a formatted date
+function get_date_string() {
+  var d = new Date();
+  var year = d.getFullYear();
+  var month = d.getMonth() + 1; // Month is 0-11 but added 1 to make it 1-12
+  var day = d.getDate();
+  var hour = d.getHours();
+  var minute = d.getMinutes();
+  var second = d.getSeconds();
+
+  var tz_offset = d.getTimezoneOffset();
+
+  return `${year}/${month}/${day} ${hour}:${minute}:${second}`;
 }
