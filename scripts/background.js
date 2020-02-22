@@ -170,8 +170,9 @@ chrome.tabs.onRemoved.addListener(function(tabId, info) {
   - counterweight icon clicks -> 'click'
   - links clicked (in popup) -> 'clicked_link'
   - Ticks hovered (in popup) -> 'tick'
-  - Selected text for searching
-  - News site visited
+  - Selected text for searching -> 'text_select'
+  - News site visited -> 'news_site'
+  - News site tab closed -> 'closed_news_site'
 */
 function create_csv() {
   chrome.storage.local.get(["events"], function(res) {
