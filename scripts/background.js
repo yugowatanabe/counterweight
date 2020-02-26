@@ -165,8 +165,8 @@ chrome.tabs.onRemoved.addListener(function(tabId, info) {
 
 
 // A Function to create a csv containing all logged data in the 'events' in local storage
-/* 
-  Events logged: 
+/*
+  Events logged:
   - counterweight icon clicks -> 'click'
   - links clicked (in popup) -> 'clicked_link'
   - Ticks hovered (in popup) -> 'tick'
@@ -179,8 +179,11 @@ function create_csv() {
     var text = '';
 
     res["events"].forEach(function(item) {
-      text += item[0].toString() + "," + item[1].toString() + "," + item[2].toString() + "\n";
-    })
+      // Check if the string exists
+      if (item[0] && item[1] && item[2]) {
+        text += item[0].toString() + "," + item[1].toString() + "," + item[2].toString() + "\n";
+      }
+    });
 
     bg = chrome.extension.getBackgroundPage();
     if (bg && debug) {
