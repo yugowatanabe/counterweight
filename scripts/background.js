@@ -84,35 +84,34 @@ chrome.runtime.onInstalled.addListener(function(details) {
     title: "Export data",
     contexts: ["page_action"]
   });
-
-  chrome.contextMenus.onClicked.addListener(function(event) {
-    if (event.menuItemId == "customTextInput") {
-      // Gives an option for custom text search on 'right click'
-
-      // Log the selected text
-      bg = chrome.extension.getBackgroundPage();
-      if (bg) {
-        bg.console.log("Selected Text: %s", event.selectionText);
-      }
-
-      // Keep the highlighted text and flag chrome storage
-      chrome.storage.local.get(["highlightedText"], function(res) {
-        chrome.storage.local.set({"highlightedText": event.selectionText});
-
-        // Record Time of Icon Click
-        chrome.storage.local.get(["events"], function(res) {
-          e = res["events"];
-          e.push([get_date_string(), "text_select", event.selectionText]);
-          chrome.storage.local.set({"events": e});
-        });
-      });
-
-    } else if (event.menuItemId == "export_button") {
-      create_csv();
-    }
-  });
 });
 
+chrome.contextMenus.onClicked.addListener(function(event) {
+  if (event.menuItemId == "customTextInput") {
+    // Gives an option for custom text search on 'right click'
+
+    // Log the selected text
+    bg = chrome.extension.getBackgroundPage();
+    if (bg) {
+      bg.console.log("Selected Text: %s", event.selectionText);
+    }
+
+    // Keep the highlighted text and flag chrome storage
+    chrome.storage.local.get(["highlightedText"], function(res) {
+      chrome.storage.local.set({"highlightedText": event.selectionText});
+
+      // Record Time of Icon Click
+      chrome.storage.local.get(["events"], function(res) {
+        e = res["events"];
+        e.push([get_date_string(), "text_select", event.selectionText]);
+        chrome.storage.local.set({"events": e});
+      });
+    });
+
+  } else if (event.menuItemId == "export_button") {
+    create_csv();
+  }
+});
 
 // Add listener for when a tab is updated
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
