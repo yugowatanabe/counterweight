@@ -1,12 +1,12 @@
 # CounterWeight
-##Loading Chrome Extension to Google Chrome Browser
+## Loading Chrome Extension to Google Chrome Browser
 1. Open Google Chrome
 2. Go to 'chrome://extensions/'
 3. Toggle Developer Mode (top right corner) if not already on
 4. Click 'Load Unpacked'
 5. Select Chrome Extension (The folder containing everything)
 
-##CounterWeight Specific Steps (After Loading into Chrome)
+## CounterWeight Specific Steps (After Loading into Chrome)
 1. There should be a card titled 'CounterWeight'. If there are errors:
 - Click 'Errors'
 - Click 'Clear All' (top right corner of the card that appears)
@@ -17,7 +17,7 @@
 - Look at the CounterWeight Icon, make sure it has color (as opposed to being greyscale)
 - Clicking on it should bring up the CounterWeight UI
 
-##Updating After Changes
+## Updating After Changes
 1. Open Google Chrome
 2. Go to 'chrome://extensions/'
 3. Reload the page
