@@ -152,7 +152,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                   // Record Time of Icon Click
                   chrome.storage.local.get(["events"], function(res) {
                     e = res["events"];
-                    e.push([get_date_string(), "clicked_link", logged_url]);
+                    e.push([get_date_string(), "clicked_link", logged_url, tabs[0].url]);
                     chrome.storage.local.set({"events": e});
 
                     // Open clicked link

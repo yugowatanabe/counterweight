@@ -162,6 +162,11 @@ chrome.tabs.onRemoved.addListener(function(tabId, info) {
   })
 });
 
+chrome.tabs.onActivated.addListener(function(info) {
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    console.log("Current Tab URL: %s", tabs[0].url);
+  });
+});
 
 // A Function to create a csv containing all logged data in the 'events' in local storage
 /*
@@ -180,8 +185,13 @@ function create_csv() {
     res["events"].forEach(function(item) {
       // Check if the string exists
       if (item[0] && item[1] && item[2]) {
-        text += item[0].toString() + "," + item[1].toString() + "," + item[2].toString() + "\n";
+        text += item[0].toString() + "," + item[1].toString() + "," + item[2].toString();
       }
+      // Print the source link if there is one
+      if (item[3]) {
+        text += "," + item[3].toString();
+      }
+      text += "\n";
     });
 
     bg = chrome.extension.getBackgroundPage();
