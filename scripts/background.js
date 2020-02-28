@@ -117,27 +117,39 @@ chrome.contextMenus.onClicked.addListener(function(event) {
 // Add listener for when a tab is updated
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
   if (changeInfo.status == 'complete' && tab.active) {
-    chrome.storage.local.get(["source_urls"], function(res) {
+    chrome.storage.local.get(["source_urls", "current_page_url"], function(res) {
       // Extract the website from the URL
-      var current_url = tab.url;
-      current_url = current_url.split('://')[1];
-      current_url = current_url.split('/')[0];
-
-      // Check if the current URL of the tab is a news source
-      if (res["source_urls"].includes(current_url)) {
-        // Update open_news to include current news source
-        chrome.storage.local.get(['open_news'], function(res) {
-          res['open_news'][tabId] = tab.url;
-          chrome.storage.local.set({"open_news": res['open_news']});
-        })
-
-        // Keep track of visits to news sites
-        chrome.storage.local.get(["events"], function(res) {
-          e = res["events"];
-          e.push([get_date_string(), "news_site", tab.url]);
-          chrome.storage.local.set({"events": e});
-        });
+      var old_url = res["current_page_url"];
+      if (old_url) {
+        old_url = old_url.split('://')[1];
+        old_url = old_url.split('/')[0];
       }
+
+      // Extract the website from the URL
+      var new_url = tab.url;
+      if (new_url) {
+        new_url = new_url.split('://')[1];
+        new_url = new_url.split('/')[0];
+      }
+  
+      // Check if the current URL of the tab is a news source
+      chrome.storage.local.get(["events"], function(result) {
+        var changed = false;
+        e = result["events"];
+        if (res["source_urls"].includes(old_url)) {
+            // Log that user is leaving old tab
+            e.push([get_date_string(), "closed_news_site", res["current_page_url"]]); 
+            changed = true;
+        }
+        if (res["source_urls"].includes(new_url)) {
+          e.push([get_date_string(), "entering_news_tab", tab.url]);  // new tab is news tab
+          changed = true;
+        }
+        if (changed) {
+          chrome.storage.local.set({"events": e, "current_page_url": tab.url});
+        }
+      });
+
     });
   }
 });
