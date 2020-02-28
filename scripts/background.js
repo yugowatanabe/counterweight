@@ -131,14 +131,14 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
         new_url = new_url.split('://')[1];
         new_url = new_url.split('/')[0];
       }
-  
+
       // Check if the current URL of the tab is a news source
       chrome.storage.local.get(["events"], function(result) {
         var changed = false;
         e = result["events"];
         if (res["source_urls"].includes(old_url)) {
             // Log that user is leaving old tab
-            e.push([get_date_string(), "closed_news_site", res["current_page_url"]]); 
+            e.push([get_date_string(), "closed_news_site", res["current_page_url"]]);
             changed = true;
         }
         if (res["source_urls"].includes(new_url)) {
@@ -174,23 +174,6 @@ chrome.tabs.onRemoved.addListener(function(tabId, info) {
     chrome.storage.local.set({"open_news": res['open_news']});
   })
 });
-
-
-// Switching to tab
-// chrome.tabs.onActivated.addListener(function(info) {
-//   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-//     chrome.storage.local.get(["source_urls"], function(res) {
-//       // Check if the current URL of the tab is a news source
-//       if (res["source_urls"].includes(new_url)) {
-//         chrome.storage.local.get(["events"], function(result) {
-//           e = result["events"];
-//           e.push([get_date_string(), "entering_news_tab", tabs[0].url]);  // new tab is news tab
-//           chrome.storage.local.set({"events": e});
-//         });
-//       }
-//     });
-//   });
-// });
 
 // Leaving
 chrome.tabs.onActivated.addListener(function(info) {
