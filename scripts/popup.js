@@ -3,16 +3,10 @@ var debug = false;
 document.addEventListener("DOMContentLoaded", function(event) {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 
-    // Record Time of Icon Click
-    chrome.storage.local.get(["events"], function(res) {
-      e = res["events"];
-      e.push([get_date_string(), "click", ""]);
-      chrome.storage.local.set({"events": e});
-    });
-
+    
     // get background page for logging
     bg = chrome.extension.getBackgroundPage();
-
+    
     // Demonstrate getting email
     if (bg && debug) {
       chrome.identity.getProfileUserInfo(function (info) {
@@ -20,6 +14,16 @@ document.addEventListener("DOMContentLoaded", function(event) {
       });
     }
 
+    // Record Time of Icon Click
+    chrome.storage.local.get(["events"], function(res) {
+      if (bg) {
+        bg.console.log("GOODBYE")
+      }
+      e = res["events"];
+      e.push([get_date_string(), "click", "popup"]);
+      chrome.storage.local.set({"events": e});
+    });
+    
     // Get the input text for the article suggestions
     var title;
     chrome.storage.local.get(["highlightedText"], function(res) {
@@ -297,13 +301,13 @@ function format_title(title, bg) {
 
 // A utility function to obtain a formatted date
 function get_date_string() {
-  var d = new Date();
-  var year = d.getFullYear();
-  var month = d.getMonth() + 1; // Month is 0-11 but added 1 to make it 1-12
-  var day = d.getDate();
-  var hour = d.getHours();
-  var minute = d.getMinutes();
-  var second = d.getSeconds();
+  var d       = new Date();
+  var year    = d.getFullYear();
+  var month   = d.getMonth() + 1; // Month is 0-11 but added 1 to make it 1-12
+  var day     = d.getDate();
+  var hour    = d.getHours();
+  var minute  = d.getMinutes();
+  var second  = d.getSeconds();
 
   var tz_offset = d.getTimezoneOffset();
 

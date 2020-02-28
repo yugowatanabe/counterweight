@@ -20,7 +20,8 @@ chrome.runtime.onInstalled.addListener(function(details) {
   chrome.storage.local.set(
     { "events": [],
       "highlightedText": "",
-      "open_news": {}
+      "open_news": {},
+      "current_page_url": ""
     });
 
   // read in biases file, save as JSON
@@ -162,9 +163,61 @@ chrome.tabs.onRemoved.addListener(function(tabId, info) {
   })
 });
 
+
+// Switching to tab
+// chrome.tabs.onActivated.addListener(function(info) {
+//   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+//     chrome.storage.local.get(["source_urls"], function(res) {
+
+  
+//       // Check if the current URL of the tab is a news source
+//       if (res["source_urls"].includes(new_url)) {
+//         chrome.storage.local.get(["events"], function(result) {
+//           e = result["events"];
+//           e.push([get_date_string(), "entering_news_tab", tabs[0].url]);  // new tab is news tab
+//           chrome.storage.local.set({"events": e});
+//         });
+//       }
+//     });
+//   });
+// });
+
+// Leaving
 chrome.tabs.onActivated.addListener(function(info) {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    console.log("Current Tab URL: %s", tabs[0].url);
+    chrome.storage.local.get(["source_urls", "current_page_url"], function(res) {
+      // Extract the website from the URL
+      var old_url = res["current_page_url"];
+      if (old_url) {
+        old_url = old_url.split('://')[1];
+        old_url = old_url.split('/')[0];
+      }
+
+      // Extract the website from the URL
+      var new_url = tabs[0].url;
+      if (new_url) {
+        new_url = new_url.split('://')[1];
+        new_url = new_url.split('/')[0];
+      }
+  
+      // Check if the current URL of the tab is a news source
+      chrome.storage.local.get(["events"], function(result) {
+        var changed = false;
+        e = result["events"];
+        if (res["source_urls"].includes(old_url)) {
+            // Log that user is leaving old tab
+            e.push([get_date_string(), "leaving_news_tab", res["current_page_url"]]); 
+            changed = true;
+        }
+        if (res["source_urls"].includes(new_url)) {
+          e.push([get_date_string(), "entering_news_tab", tabs[0].url]);  // new tab is news tab
+          changed = true;
+        }
+        if (changed) {
+          chrome.storage.local.set({"events": e, "current_page_url": tabs[0].url});
+        }
+      });
+    });
   });
 });
 
@@ -186,12 +239,12 @@ function create_csv() {
       // Check if the string exists
       if (item[0] && item[1] && item[2]) {
         text += item[0].toString() + "," + item[1].toString() + "," + item[2].toString();
+        // Print the source link if there is one
+        if (item[3]) {
+          text += "," + item[3].toString();
+        }
+        text += "\n";
       }
-      // Print the source link if there is one
-      if (item[3]) {
-        text += "," + item[3].toString();
-      }
-      text += "\n";
     });
 
     bg = chrome.extension.getBackgroundPage();
