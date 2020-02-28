@@ -9,7 +9,7 @@ sources_bias = {}
 for line in sources:
     current = line.split(',')
     current_source = current[0].replace(" ", "").lower()
-    current_bias = round(float(current[2]))
+    current_bias = float(current[1])
     sources_bias[current_source] = current_bias
 
 x = []
@@ -22,14 +22,15 @@ for line in data:
     url = current[2]
 
     # Check if the current line is a clicked_link line
-    if type == "clicked_link":
+    if type == "news_site":
         # Extract the url
         tsd, td, tsu = extract(url)
         if td in sources_bias:
             x.append(sources_bias[td])
 
 print(x)
-plt.hist(x, bins=10)
+plt.hist(x, bins=15, range=(-30, 30))
 plt.title('User Newsite Bias History Distribution')
 plt.xlabel('Bias')
+plt.ylabel('Visit Count')
 plt.show()
