@@ -3,10 +3,10 @@ var debug = false;
 document.addEventListener("DOMContentLoaded", function(event) {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 
-    
+
     // get background page for logging
     bg = chrome.extension.getBackgroundPage();
-    
+
     // Demonstrate getting email
     if (bg && debug) {
       chrome.identity.getProfileUserInfo(function (info) {
@@ -16,14 +16,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
     // Record Time of Icon Click
     chrome.storage.local.get(["events"], function(res) {
-      if (bg) {
-        bg.console.log("GOODBYE")
-      }
       e = res["events"];
       e.push([get_date_string(), "click", "popup"]);
       chrome.storage.local.set({"events": e});
     });
-    
+
     // Get the input text for the article suggestions
     var title;
     chrome.storage.local.get(["highlightedText"], function(res) {
