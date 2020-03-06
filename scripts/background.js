@@ -253,6 +253,33 @@ function create_csv() {
 }
 
 
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+  chrome.tabs.executeScript({
+    file: 'scripts/inject.js'
+  });
+  chrome.tabs.insertCSS({
+    file: 'inject.css'
+  });
+});
+
+
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  console.log("GOT FROM INJECTED: " + request.msg); // TODO: Remove
+
+  chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    var activeTab = tabs[0].url; 
+    chrome.storage.local.get(["events"], function(result) {
+      e = result["events"];
+      e.push([get_date_string(), "scrolled", activeTab, request.msg]);
+      chrome.storage.local.set({"events": e});
+    });
+  });
+
+  if (request.msg == "hello")
+    sendResponse({farewell: "goodbye"});
+});
+
+
 // A utility function to obtain a formatted date
 function get_date_string() {
   var d = new Date();

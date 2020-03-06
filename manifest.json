@@ -3,13 +3,15 @@
   "version": "1.0",
   "description": "Discover different persepectives on an event across news sources.",
   "permissions": [
+    "activeTab",
     "declarativeContent",
     "tabs",
     "storage",
     "identity",
     "identity.email",
     "downloads",
-    "contextMenus"
+    "contextMenus",
+    "https://*/"
   ],
   "oauth2": {
     "client_id": "627474095536-ss1hfl9glimugj5uvghfi0e0eda793kj.apps.googleusercontent.com",
