@@ -11,6 +11,7 @@
     "identity.email",
     "downloads",
     "contextMenus",
+    "http://*/",
     "https://*/"
   ],
   "oauth2": {
