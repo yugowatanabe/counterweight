@@ -22,7 +22,7 @@ for line in data:
     url = current[2]
 
     # Check if the current line is a clicked_link line
-    if type == "news_site":
+    if type == "entering_news_tab":
         # Extract the url
         tsd, td, tsu = extract(url)
         if td in sources_bias:
