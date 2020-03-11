@@ -266,18 +266,30 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   console.log("GOT FROM INJECTED: " + request.msg); // TODO: Remove
   // Logs even if scrolling non-active page, but will not be in data file
-  // This is because the javascript has already been injected, but will 
+  // This is because the javascript has already been injected, but will
   // get the wrong url
   // TODO: Use window.location.href
   // https://www.tutorialrepublic.com/faq/how-to-get-the-current-url-with-javascript.php
 
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
     try {
-      var activeTab = tabs[0].url; 
-      chrome.storage.local.get(["events"], function(result) {
-        e = result["events"];
-        e.push([get_date_string(), "scrolled", activeTab, request.msg]);
-        chrome.storage.local.set({"events": e});
+      chrome.storage.local.get(["source_urls"], function(res) {
+        // Extract the website from the URL
+        var activeTab = tabs[0].url;
+        var base_url = activeTab;
+        if (base_url) {
+          base_url = base_url.split('://')[1];
+          base_url = base_url.split('/')[0];
+        }
+
+        // Check if the current URL of the tab is a news source
+        chrome.storage.local.get(["events"], function(result) {
+          if (res["source_urls"].includes(base_url)) {
+            e = result["events"];
+            e.push([get_date_string(), "scrolled", activeTab, request.msg]);
+            chrome.storage.local.set({"events": e});
+          }
+        });
       });
     } catch (err) {
       console.log("No URL " + err)
