@@ -1,6 +1,6 @@
 'use strict';
 var prev_percent = -1;
-var diff = 1;
+var diff = 5;
 
 var tracker = document.getElementById('percent-scroll-tracker');
 if (tracker === null) {
@@ -10,8 +10,8 @@ if (tracker === null) {
         tracker.setPercentage = function() {
             var percent = Math.round(100 * (window.pageYOffset + window.innerHeight) / document.body.scrollHeight)
             tracker.innerHTML  = percent;
-            if (percent != prev_percent) { //  && percent % diff
-                chrome.runtime.sendMessage({msg: percent}, function(response) {});
+            if (percent != prev_percent && percent % diff == 0) {
+                chrome.runtime.sendMessage({msg: percent, url: window.location.href}, function(response) {});
                 prev_percent = percent;
             }
         };

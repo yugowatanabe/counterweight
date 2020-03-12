@@ -264,7 +264,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  console.log("GOT FROM INJECTED: " + request.msg); // TODO: Remove
+  console.log("GOT FROM INJECTED: " + request.msg + "  URL: " + request.url); // TODO: Remove
   // Logs even if scrolling non-active page, but will not be in data file
   // This is because the javascript has already been injected, but will
   // get the wrong url
@@ -275,7 +275,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     try {
       chrome.storage.local.get(["source_urls"], function(res) {
         // Extract the website from the URL
-        var activeTab = tabs[0].url;
+        var activeTab = request.url; // tabs[0].url;
         var base_url = activeTab;
         if (base_url) {
           base_url = base_url.split('://')[1];
