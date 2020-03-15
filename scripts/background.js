@@ -9,7 +9,8 @@ function csv_to_json(text){
   for (var i=1; i < lines.length; i++){
     var values = lines[i].split(",");
     json_objs[values[0]] = {"bias":    parseFloat(values[1]),
-                            "quality": parseFloat(values[2])};
+                            "quality": parseFloat(values[2]),
+                            "url": values[3]};
   }
 
   return json_objs;
@@ -24,9 +25,11 @@ chrome.runtime.onInstalled.addListener(function(details) {
       "current_page_url": ""
     });
 
+  var sources_json;
+
   // read in biases file, save as JSON
   fetch('csv/sources.csv').then(response => response.text()).then(function(text){
-    var sources_json = csv_to_json(text);
+    sources_json = csv_to_json(text);
     console.log(sources_json);
     chrome.storage.local.set({source_biases: sources_json});
   });
@@ -43,7 +46,14 @@ chrome.runtime.onInstalled.addListener(function(details) {
       sources = obj.sources.map(x => x.url);
       sources = sources.map(x => x.split('://')[1]);
       sources = sources.map(x => x.split('/')[0]);
-      sources.push('www.cnn.com','www.bbc.com');
+
+      // Add source urls from CSV file to the current list from the News API
+      for (var key in sources_json) {
+        var curr_url = sources_json[key].url;
+        if (!sources.includes(curr_url)) {
+          sources.push(curr_url);
+        }
+      }
 
       // Save the source URLs
       chrome.storage.local.set({"source_urls": sources});
