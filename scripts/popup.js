@@ -139,7 +139,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 var text = "<img src='" + result[i].urlToImage + "'>";
                 text += "<b>" + result[i].title + "</b>";
                 var time = result[i].publishedAt.match(/(.*)-(.*)-(.*)T(.*):(.*):(.*)Z/);
-                var event = new Date(Date.UTC(time[1], time[2], time[3], time[4], time[5], time[6]));
+                var event = new Date(Date.UTC(time[1], time[2] - 1, time[3], time[4], time[5], time[6]));
                 time = event.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
                 text += "<p class='description'><i>" + time + "</i>&nbsp;&nbsp;-&nbsp;";
                 text += result[i].description + "</p>";
