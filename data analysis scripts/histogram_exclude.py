@@ -4,12 +4,12 @@ import sys
 import matplotlib.pyplot as plt
 
 # Check for adequate number of args
-if (len(sys.argv)) <= 1:
-    print("USAGE: python3 histogram.py inputData")
+if (len(sys.argv)) <= 2:
+    print("USAGE: python3 histogram.py inputData excludeURLs")
     sys.exit()
 
 # Populate a dictionary with the sources and their corresponding bias
-sources = open("csv/sources_histogram.csv","r")
+sources = open("../csv/sources_histogram.csv","r")
 sources_bias = {}
 for line in sources:
     current = line.split(',')
