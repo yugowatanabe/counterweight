@@ -4,8 +4,8 @@ import sys
 import matplotlib.pyplot as plt
 
 # Check for adequate number of args
-if (len(sys.argv)) <= 2:
-    print("USAGE: python3 histogram_exclude.py inputData excludeURLs")
+if (len(sys.argv)) <= 1:
+    print("USAGE: python3 histogram_clicked_suggestion.py inputData")
     sys.exit()
 
 # Populate a dictionary with the sources and their corresponding bias
@@ -19,21 +19,18 @@ for line in sources:
 
 x = []
 
-dogfooding_articles = []
-article_file = open(sys.argv[2],"r")
-for line in article_file:
-    dogfooding_articles.append(line.rstrip())
-
 # Open user data
 data = open(sys.argv[1],"r")
 for line in data:
     current = line.split(',')
     type = current[1]
     url = current[2]
+    # Get destination URL
+    url = url.split(',')[0];
 
     # Check if the current line is a clicked_link line
-    if type == "entering_news_tab" and url.rstrip() not in dogfooding_articles:
-        print(url.rstrip())
+    if type == "clicked_link":
+        print(url)
         url = url.split('://')[1]
         url = url.split('/')[0]
         if url in sources_bias:

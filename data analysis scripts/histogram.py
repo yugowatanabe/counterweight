@@ -28,8 +28,8 @@ for line in data:
 
     # Check if the current line is a clicked_link line
     if type == "entering_news_tab":
-        url = url.split('://')[1];
-        url = url.split('/')[0];
+        url = url.split('://')[1]
+        url = url.split('/')[0]
         if url in sources_bias:
             x.append(sources_bias[url])
 
