@@ -2,7 +2,6 @@
 
 import sys
 import matplotlib.pyplot as plt
-from tldextract import extract
 
 # Check for adequate number of args
 if (len(sys.argv)) <= 1:
@@ -10,7 +9,7 @@ if (len(sys.argv)) <= 1:
     sys.exit()
 
 # Populate a dictionary with the sources and their corresponding bias
-sources = open("csv/sources_histogram.csv","r")
+sources = open("../csv/sources_histogram.csv","r")
 sources_bias = {}
 for line in sources:
     current = line.split(',')
