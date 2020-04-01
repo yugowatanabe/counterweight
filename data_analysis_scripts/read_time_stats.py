@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 
 import sys
-import matplotlib.pyplot as plt
 from datetime import datetime
 
 # Check for adequate number of args
-if (len(sys.argv)) <= 2:
-    print("USAGE: python3 histogram.py inputData timeThreshhold")
+if (len(sys.argv)) <= 1:
+    print("USAGE: python3 average_read_time.py inputData")
     sys.exit()
 
 # Populate a dictionary with the sources and their corresponding bias
@@ -40,23 +39,21 @@ for line in data:
             if visited_pages[url][1] is not None:
                 visited_pages[url] = (visited_pages[url][0] + (datetime.strptime(time_stamp, '%Y/%m/%d %H:%M:%S') - visited_pages[url][1]).total_seconds(), None)
 
-x = []
+min = float('inf')
+max = float('-inf')
+sum = 0
 
-# Traverse through each website where it met the minimum
+# Get stats from all the pages read
 for key, value in visited_pages.items():
-    #print(item)
-    #print(value)
     url = key
-    time_spent = float(value[0])
-    if time_spent > float(sys.argv[2]) and value[1] is None:
-        url = url.split('://')[1]
-        url = url.split('/')[0]
-        if url in sources_bias:
-            x.append(sources_bias[url])
+    time_spent = int(value[0])
+    if value[1] is None:
+        if time_spent < min:
+            min = time_spent
+        if time_spent > max:
+            max = time_spent
+        sum += time_spent
 
-print(x)
-plt.hist(x, bins=15, range=(-30, 30))
-plt.title('User Newsite Bias History Distribution Where Time Spent Was at Least {} seconds'.format(sys.argv[2]))
-plt.xlabel('Bias')
-plt.ylabel('Visit Count')
-plt.show()
+print('min time: {}'.format(min))
+print('max time: {}'.format(max))
+print('avg time: {}'.format(float(sum) / len(visited_pages)))
