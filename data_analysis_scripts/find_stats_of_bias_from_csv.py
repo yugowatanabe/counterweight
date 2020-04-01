@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from tldextract import extract
 
 # Populate a dictionary with the sources and their corresponding bias
-sources = open("csv/sources_histogram.csv","r")
+sources = open("../csv/sources_histogram.csv","r")
 sources_bias = {}
 highest = 0
 lowest = 999
