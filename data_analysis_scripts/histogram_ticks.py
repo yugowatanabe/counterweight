@@ -37,7 +37,7 @@ for line in data:
 
 print(x)
 plt.hist(x, bins=15, range=(-30, 30))
-plt.title('User Newsite Bias History Distribution')
+plt.title('User Newsite Bias History Distribution of Tick Hovering: {}'.format(sys.argv[1].split('/')[len(sys.argv[1].split('/')) - 1]))
 plt.xlabel('Bias')
-plt.ylabel('Visit Count')
+plt.ylabel('Hover Count')
 plt.show()

@@ -6,7 +6,7 @@ from datetime import datetime
 
 # Check for adequate number of args
 if (len(sys.argv)) <= 2:
-    print("USAGE: python3 histogram.py inputData timeThreshhold")
+    print("USAGE: python3 histogram_min_time.py inputData timeThreshhold")
     sys.exit()
 
 # Populate a dictionary with the sources and their corresponding bias
@@ -56,7 +56,7 @@ for key, value in visited_pages.items():
 
 print(x)
 plt.hist(x, bins=15, range=(-30, 30))
-plt.title('User Newsite Bias History Distribution Where Time Spent Was at Least {} seconds'.format(sys.argv[2]))
+plt.title('User Newsite Bias History Distribution Where Time Spent Was at Least {} seconds: {}'.format(sys.argv[2], sys.argv[1].split('/')[len(sys.argv[1].split('/')) - 1]))
 plt.xlabel('Bias')
 plt.ylabel('Visit Count')
 plt.show()

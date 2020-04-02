@@ -2,10 +2,11 @@
 
 import sys
 from datetime import datetime
+from statistics import mean, median, stdev
 
 # Check for adequate number of args
 if (len(sys.argv)) <= 1:
-    print("USAGE: python3 average_read_time.py inputData")
+    print("USAGE: python3 read_time_stats.py inputData")
     sys.exit()
 
 # Populate a dictionary with the sources and their corresponding bias
@@ -41,19 +42,19 @@ for line in data:
 
 min = float('inf')
 max = float('-inf')
-sum = 0
 
+x = []
 # Get stats from all the pages read
 for key, value in visited_pages.items():
-    url = key
     time_spent = int(value[0])
-    if value[1] is None:
-        if time_spent < min:
-            min = time_spent
-        if time_spent > max:
-            max = time_spent
-        sum += time_spent
+    if time_spent < min:
+        min = time_spent
+    if time_spent > max:
+        max = time_spent
+    x.append(time_spent)
 
-print('min time: {}'.format(min))
-print('max time: {}'.format(max))
-print('avg time: {}'.format(float(sum) / len(visited_pages)))
+print('mean time: {}'.format(mean(x)))
+print('minimum time: {}'.format(min))
+print('median time: {}'.format(median(x)))
+print('maximum time: {}'.format(max))
+print('stdev time: {}'.format(stdev(x)))

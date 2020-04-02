@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 # Check for adequate number of args
 if (len(sys.argv)) <= 2:
-    print("USAGE: python3 histogram_exclude.py inputData excludeURLs")
+    print("USAGE: python3 histogram_regular_history.py inputData excludeURLs")
     sys.exit()
 
 # Populate a dictionary with the sources and their corresponding bias
@@ -58,7 +58,7 @@ for line in data:
 
 print(x)
 plt.hist(x, bins=15, range=(-30, 30))
-plt.title('User Newsite Bias History Distribution')
+plt.title('User Newsite Bias Regular History Distribution: {}'.format(sys.argv[1].split('/')[len(sys.argv[1].split('/')) - 1]))
 plt.xlabel('Bias')
 plt.ylabel('Visit Count')
 plt.show()
