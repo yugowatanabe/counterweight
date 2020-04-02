@@ -2,13 +2,13 @@ import csv
 import datetime as dt
 import pandas as pd
 import plotly.graph_objects as go
+import sys
 
-
-fname = "/Users/jamesking/Desktop/cs/UCLA/HCI/data_files/dogfooding/set_6"
+fname = sys.argv[1]
 
 
 def get_scroll_fig(fname):
-    ''' 
+    '''
     Given the name of a data file, produce two go.Figure objects that can be
     viewed using fig.show()
     '''
@@ -74,6 +74,10 @@ def get_scroll_fig(fname):
 
 
 if __name__ == "__main__":
+    if (len(sys.argv)) <= 1:
+        print("USAGE: python3 scroll_tracker.py inputData")
+        sys.exit()
+
     fig_a, fig_b = get_scroll_fig(fname)
     fig_a.show()
     fig_b.show()
