@@ -16,6 +16,20 @@ function csv_to_json(text){
   return json_objs;
 }
 
+// function to obtain a json object mapping url to bias
+function get_url_dict(text){
+  var lines = text.split("\n");
+  var headers = lines[0].split(",");
+
+  var json_objs = {};
+  for (var i=1; i < lines.length; i++){
+    var values = lines[i].split(",");
+    json_objs[values[3]] = values[1];
+  }
+
+  return json_objs;
+}
+
 chrome.runtime.onInstalled.addListener(function(details) {
   // Logging Set Up
   chrome.storage.local.set(
@@ -32,6 +46,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
     sources_json = csv_to_json(text);
     console.log(sources_json);
     chrome.storage.local.set({source_biases: sources_json});
+    chrome.storage.local.set({url_dict: get_url_dict(text)})
   });
 
   // get available news sources from API

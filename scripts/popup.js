@@ -77,13 +77,38 @@ document.addEventListener("DOMContentLoaded", function(event) {
           }
 
           // list results in popup.html, listed with bias
-          chrome.storage.local.get(['source_biases'], function(get_result) {
+          chrome.storage.local.get(['source_biases', 'url_dict'], function(get_result) {
             var biases_dict = get_result.source_biases;
 
             // div which holds the divs illustrating bar along spectrum per article
             var bar = document.getElementById('bar');
             var container = document.getElementById('container');
             var i = 0;
+
+            // Tick for Current site
+            cur_src = tabs[0].url;
+            cur_src = cur_src.split('://')[1];
+            cur_src = cur_src.split('/')[0];
+
+            if (cur_src in get_result.url_dict) {
+              if (bg) {
+                bg.console.log("Found bias: " + cur_src + " " + get_result.url_dict[cur_src]);
+              }
+
+              var cur_tick = document.createElement("DIV");
+              var bias = (get_result.url_dict[cur_src]*2 + 42)/84*100;
+              cur_tick.style =   "width: 3px;\
+                                  height: 30px;\
+                                  background-color: #ff00aa;\
+                                  display: inline-flex;\
+                                  position: absolute;\
+                                  left: "+ bias + "\%;";
+              bar.appendChild(cur_tick);
+            } else {
+              if (bg) {
+                bg.console.log("Could not find bias: " + cur_src)
+              }
+            }
 
             // for all articles with 3 or more matching keywords
             while (counts[i] > 2) {
@@ -202,7 +227,7 @@ var tick_mouseover = function () {
     ticks[i].style.backgroundColor = "#8c8c8c";
   }
   // make only hovered tick large
-  this.style.height = "20px";
+  this.style.height = "15px";
   this.style.backgroundColor = "#248f24";
 
   // get all source results and hide all of them
