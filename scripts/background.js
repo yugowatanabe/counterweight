@@ -23,7 +23,6 @@ function get_url_dict(text){
   var json_objs = {};
   for (var i=1; i < lines.length; i++){
     var values = lines[i].split(",");
-    // json_objs[values[1]] = values[2];
     json_objs[values[1]] = {"bias": parseFloat(values[2]),
                             "quality": values[3]};
   }
@@ -305,7 +304,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     try {
       chrome.storage.local.get(["source_urls"], function(res) {
         // Extract the website from the URL
-        var activeTab = request.url; // tabs[0].url;
+        var activeTab = request.url;
         var base_url = activeTab;
         if (base_url) {
           base_url = base_url.split('://')[1];
