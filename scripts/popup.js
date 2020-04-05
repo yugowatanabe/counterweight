@@ -116,6 +116,13 @@ document.addEventListener("DOMContentLoaded", function(event) {
               var source    = result[i].source['name'];
               var source_id = result[i].source['id'];
               var source_url = result[i].url;
+
+              // Do not include the current article in the suggestion
+              if (tabs[0].url === source_url) {
+                i++;
+                continue;
+              }
+
               source_url = source_url.split('://')[1];
               source_url = source_url.split('/')[0];
 
