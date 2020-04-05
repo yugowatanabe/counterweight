@@ -148,14 +148,14 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     chrome.storage.local.get(["source_urls", "current_page_url"], function(res) {
       // Extract the website from the URL
       var old_url = res["current_page_url"];
-      if (old_url) {
+      if (old_url && new_url.includes('://')) {
         old_url = old_url.split('://')[1];
         old_url = old_url.split('/')[0];
       }
 
       // Extract the website from the URL
       var new_url = tab.url;
-      if (new_url) {
+      if (new_url && new_url.includes('://')) {
         new_url = new_url.split('://')[1];
         new_url = new_url.split('/')[0];
       }

@@ -164,15 +164,13 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 // create list element for article
                 var node = document.createElement("P");
                 node.setAttribute("class", "article");
-                var text = "<img src='" + result[i].urlToImage + "'>";
-                text += "<b>" + result[i].title + "</b>";
+                var text = "<img src='" + result[i].urlToImage + "' style=\"cursor: pointer;\">";
+                text += "<b style=\"cursor: pointer;\">" + result[i].title + "</b>";
                 var time = result[i].publishedAt.match(/(.*)-(.*)-(.*)T(.*):(.*):(.*)Z/);
                 var event = new Date(Date.UTC(time[1], time[2] - 1, time[3], time[4], time[5], time[6]));
                 time = event.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
                 text += "<p class='description'><i>" + time + "</i>&nbsp;&nbsp;-&nbsp;";
                 text += result[i].description + "</p>";
-                // text += "(Bias: "   + biases_dict[source].bias + ", ";
-                // text += "Quality: " + biases_dict[source].quality + ")<br>";
 
                 // Add Link to go to article
                 node.innerHTML = text;
