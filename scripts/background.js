@@ -3,14 +3,13 @@ var debug = false;
 // function converting CSV text to JSON object
 function csv_to_json(text){
   var lines = text.split("\n");
-  var headers = lines[0].split(",");
 
   var json_objs = {};
-  for (var i=1; i < lines.length; i++){
+  for (var i = 1; i < lines.length; i++){
     var values = lines[i].split(",");
-    json_objs[values[0]] = {"bias":    parseFloat(values[1]),
-                            "quality": parseFloat(values[2]),
-                            "url": values[3]};
+    json_objs[values[0]] = {"bias": parseFloat(values[2]),
+                            "quality": values[3],
+                            "url": values[1]};
   }
 
   return json_objs;
@@ -24,7 +23,9 @@ function get_url_dict(text){
   var json_objs = {};
   for (var i=1; i < lines.length; i++){
     var values = lines[i].split(",");
-    json_objs[values[3]] = values[1];
+    // json_objs[values[1]] = values[2];
+    json_objs[values[1]] = {"bias": parseFloat(values[2]),
+                            "quality": values[3]};
   }
 
   return json_objs;
@@ -42,9 +43,11 @@ chrome.runtime.onInstalled.addListener(function(details) {
   var sources_json;
 
   // read in biases file, save as JSON
-  fetch('csv/sources.csv').then(response => response.text()).then(function(text){
+  fetch('csv/updated_sources.csv').then(response => response.text()).then(function(text){
     sources_json = csv_to_json(text);
-    console.log(sources_json);
+    if (debug) {
+      console.log(sources_json);
+    }
     chrome.storage.local.set({source_biases: sources_json});
     chrome.storage.local.set({url_dict: get_url_dict(text)})
   });
@@ -118,7 +121,7 @@ chrome.contextMenus.onClicked.addListener(function(event) {
 
     // Log the selected text
     bg = chrome.extension.getBackgroundPage();
-    if (bg) {
+    if (bg && debug) {
       bg.console.log("Selected Text: %s", event.selectionText);
     }
 
@@ -289,7 +292,9 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  console.log("GOT FROM INJECTED: " + request.msg + "  URL: " + request.url); // TODO: Remove
+  if (debug) {
+    console.log("GOT FROM INJECTED: " + request.msg + "  URL: " + request.url);
+  }
   // Logs even if scrolling non-active page, but will not be in data file
   // This is because the javascript has already been injected, but will
   // get the wrong url

@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
           // list results in popup.html, listed with bias
           chrome.storage.local.get(['source_biases', 'url_dict'], function(get_result) {
-            var biases_dict = get_result.source_biases;
+            var url_dict = get_result.url_dict;
 
             // div which holds the divs illustrating bar along spectrum per article
             var bar = document.getElementById('bar');
@@ -90,13 +90,13 @@ document.addEventListener("DOMContentLoaded", function(event) {
             cur_src = cur_src.split('://')[1];
             cur_src = cur_src.split('/')[0];
 
-            if (cur_src in get_result.url_dict) {
-              if (bg) {
-                bg.console.log("Found bias: " + cur_src + " " + get_result.url_dict[cur_src]);
+            if (cur_src in url_dict) {
+              if (bg && debug) {
+                bg.console.log("Found bias: " + cur_src + " " + url_dict[cur_src].bias);
               }
 
               var cur_tick = document.createElement("DIV");
-              var bias = (get_result.url_dict[cur_src]*2 + 42)/84*100;
+              var bias = (url_dict[cur_src].bias + 42) / 84 * 100;
               cur_tick.style =   "width: 3px;\
                                   height: 30px;\
                                   background-color: #ff00aa;\
@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                                   left: "+ bias + "\%;";
               bar.appendChild(cur_tick);
             } else {
-              if (bg) {
+              if (bg && debug) {
                 bg.console.log("Could not find bias: " + cur_src)
               }
             }
@@ -115,9 +115,12 @@ document.addEventListener("DOMContentLoaded", function(event) {
               // get source name and id
               var source    = result[i].source['name'];
               var source_id = result[i].source['id'];
+              var source_url = result[i].url;
+              source_url = source_url.split('://')[1];
+              source_url = source_url.split('/')[0];
 
               // if we know bias of source (is in keys of biases_dict), show article
-              if (biases_dict[source] !== undefined) {
+              if (source_url in url_dict) {
 
                 // try to get div with source's id, if doesn't exist, create it
                 var source_div = document.getElementById(source);
@@ -136,16 +139,16 @@ document.addEventListener("DOMContentLoaded", function(event) {
                   var source_q = document.createElement("P");  // hold source quality
                   source_q.setAttribute("class", "src_qual");
                   source_q.innerHTML = "Quality:&nbsp;&nbsp;";
-                  let color = get_color(Math.round(biases_dict[source].quality)/64.);
+                  let color = get_color(url_dict[source_url].quality);
                   let r = color[0]; let g = color[1]; let b = color[2];
-                  source_q.innerHTML += parse("<span style='color:rgba(%s,%s,%s);'>", r, g, b) + Math.round(biases_dict[source].quality) + "</span>";
+                  source_q.innerHTML += parse("<span style='color:rgba(%s,%s,%s);'>", r, g, b) + url_dict[source_url].quality + "</span>";
 
                   source_div.appendChild(source_h);
                   source_div.appendChild(source_q);
                   container.appendChild(source_div);
 
                   // also create tick for source on spectrum bar
-                  var bias = (biases_dict[source].bias*2 + 42)/84*100;  // map bias to a number between 0-84
+                  var bias = (url_dict[source_url].bias + 42) / 84 * 100;  // map bias to a number between 0-84
                   var tick = document.createElement("DIV");  // put icon along spectrum bar
                   tick.setAttribute("id", source + "_bar");
                   tick.setAttribute("class", "tick");
@@ -251,7 +254,23 @@ var tick_mouseover = function () {
 }
 
 // function which returns color (red to green) based on weight
-function get_color(weight) {
+function get_color(quality) {
+  // Match quality string with corresponding weight
+  var weight;
+  if (quality === 'VERY HIGH') {
+    weight = 1.5;
+  } else if (quality === 'HIGH') {
+    weight = 1.2;
+  } else if (quality === 'MOSTLY FACTUAL') {
+    weight = 0.9;
+  } else if (quality === 'MIXED') {
+    weight = 0.6;
+  } else if (quality === 'LOW') {
+    weight = 0.3;
+  } else {
+    weight = 0;
+  }
+
   var w1 = weight;
   var w2 = 1 - w1;
   var color1 = [0,   180, 0];
