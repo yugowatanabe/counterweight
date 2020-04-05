@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                                   background-color: #ff00aa;\
                                   display: inline-flex;\
                                   position: absolute;\
-                                  left: "+ bias + "\%;";
+                                  left: " + bias + "\%;";
               bar.appendChild(cur_tick);
             } else {
               if (bg && debug) {
@@ -164,7 +164,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                                   background-color: #8c8c8c;\
                                   display: inline-flex;\
                                   position: absolute;\
-                                  left: "+ bias + "\%;";
+                                  left: " + bias + "\%;";
                   bar.appendChild(tick);
                 }
 

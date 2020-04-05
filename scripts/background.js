@@ -147,7 +147,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     chrome.storage.local.get(["source_urls", "current_page_url"], function(res) {
       // Extract the website from the URL
       var old_url = res["current_page_url"];
-      if (old_url && new_url.includes('://')) {
+      if (old_url && old_url.includes('://')) {
         old_url = old_url.split('://')[1];
         old_url = old_url.split('/')[0];
       }
@@ -208,14 +208,14 @@ chrome.tabs.onActivated.addListener(function(info) {
     chrome.storage.local.get(["source_urls", "current_page_url"], function(res) {
       // Extract the website from the URL
       var old_url = res["current_page_url"];
-      if (old_url) {
+      if (old_url && old_url.includes('://')) {
         old_url = old_url.split('://')[1];
         old_url = old_url.split('/')[0];
       }
 
       // Extract the website from the URL
       var new_url = tabs[0].url;
-      if (new_url) {
+      if (new_url && new_url.includes('://')) {
         new_url = new_url.split('://')[1];
         new_url = new_url.split('/')[0];
       }
@@ -306,7 +306,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         // Extract the website from the URL
         var activeTab = request.url;
         var base_url = activeTab;
-        if (base_url) {
+        if (base_url && base_url.includes('://')) {
           base_url = base_url.split('://')[1];
           base_url = base_url.split('/')[0];
         }
