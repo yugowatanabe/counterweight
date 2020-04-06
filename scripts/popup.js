@@ -110,8 +110,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
               }
             }
 
+            var found_match = false;
             // for all articles with 3 or more matching keywords
             while (counts[i] > 2) {
+              found_match = true;
               // get source name and id
               var source    = result[i].source['name'];
               var source_id = result[i].source['id'];
@@ -198,6 +200,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
               }
 
               i++;
+            }
+
+            if (!found_match) {
+              container.innerHTML = "<br /><b>No related articles found!</b>";
             }
 
             // add event listeners to ticks
