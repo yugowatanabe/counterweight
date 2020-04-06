@@ -5,23 +5,24 @@ body {
   padding: 10px;
 }
 
-#export_data {
-  background-color: #9fbb90;
-  padding: 1%;
-}
-
-#export_data:hover {
-  background-color: #738867;
-}
-
 /* blue to red gradient spectrum bar */
 #bar {
-  width: 100%;
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
   height: 15px;
   background-image: linear-gradient(to right, #003399, #cc0000);
   border-radius: 25px;
   outline: none;
   opacity: 0.8;
+}
+
+#label {
+  width: 100%;
+  font-size: 13px;
+  font-weight: bold;
+  height: 15px;
+  border-radius: 25px;
 }
 
 #container {
