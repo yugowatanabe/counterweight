@@ -36,7 +36,8 @@ chrome.runtime.onInstalled.addListener(function(details) {
     { "events": [],
       "highlightedText": "",
       "open_news": {},
-      "current_page_url": ""
+      "current_page_url": "",
+      "toggle_value": false
     });
 
   var sources_json;

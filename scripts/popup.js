@@ -21,6 +21,19 @@ document.addEventListener("DOMContentLoaded", function(event) {
       chrome.storage.local.set({"events": e});
     });
 
+    // Set Up toggle
+    var toggler = document.getElementById('toggle_article');
+    chrome.storage.local.get(['toggle_value'], function(res) {
+      toggler.checked = res.toggle_value;
+      toggler.onclick = function () {
+        console.log(this.checked);
+        if (bg) {
+          bg.console.log("TOGGLE VALUE BECOMES " + this.checked);
+        }
+        chrome.storage.local.set({"toggle_value": this.checked});
+      }
+    })
+
     // Get the input text for the article suggestions
     var title;
     chrome.storage.local.get(["highlightedText"], function(res) {
@@ -77,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
           }
 
           // list results in popup.html, listed with bias
-          chrome.storage.local.get(['source_biases', 'url_dict'], function(get_result) {
+          chrome.storage.local.get(['source_biases', 'url_dict', 'toggle_value'], function(get_result) {
             var url_dict = get_result.url_dict;
 
             // div which holds the divs illustrating bar along spectrum per article
@@ -86,17 +99,19 @@ document.addEventListener("DOMContentLoaded", function(event) {
             var i = 0;
 
             // Tick for Current site
-            cur_src = tabs[0].url;
+            var cur_src = tabs[0].url;
             cur_src = cur_src.split('://')[1];
             cur_src = cur_src.split('/')[0];
 
+            var cur_src_bias = 0;
             if (cur_src in url_dict) {
+              cur_src_bias = url_dict[cur_src].bias;
               if (bg && debug) {
                 bg.console.log("Found bias: " + cur_src + " " + url_dict[cur_src].bias);
               }
 
               var cur_tick = document.createElement("DIV");
-              var bias = (url_dict[cur_src].bias + 42) / 84 * 100;
+              var bias = (cur_src_bias + 42) / 84 * 100;
               cur_tick.style =   "width: 3px;\
                                   height: 30px;\
                                   background-color: #ff00aa;\
@@ -109,6 +124,21 @@ document.addEventListener("DOMContentLoaded", function(event) {
                 bg.console.log("Could not find bias: " + cur_src)
               }
             }
+
+            // Find the best estimate of the average bias distance from current article
+            var distances = [];
+            for (var j = 0; j < result.length; j++) {
+              var u = result[j].url;
+              u = u.split('://')[1];
+              u = u.split('/')[0];
+              if (u in url_dict) {
+                var d = Math.abs(cur_src_bias - url_dict[u].bias);
+                distances.push(d);
+              }
+            }
+            var average = distances.reduce((a, b) => a + b) / distances.length;
+            bg.console.log(distances);
+            bg.console.log("AVERAGE: " + average);
 
             var found_match = false;
             // for all articles with 3 or more matching keywords
@@ -130,6 +160,13 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
               // if we know bias of source (is in keys of biases_dict), show article
               if (source_url in url_dict) {
+                // If option is activated, select only articles that are sufficiently different than the current article
+                bg.console.log(Math.abs(cur_src_bias - url_dict[source_url].bias));
+                if (get_result.toggle_value == true && Math.abs(cur_src_bias - url_dict[source_url].bias) < average) {
+                  i++;
+                  continue;
+                }
+                bg.console.log("GOT HERE "+ result[i].url)
 
                 // try to get div with source's id, if doesn't exist, create it
                 var source_div = document.getElementById(source);
