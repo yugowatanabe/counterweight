@@ -18,7 +18,18 @@ document.addEventListener("DOMContentLoaded", (event) => {
     let toggler = document.getElementById('toggle_article');
     chrome.storage.local.get(['toggle_value'], (res) => {
       toggler.checked = res.toggle_value;
-      toggler.onclick = function () {chrome.storage.local.set({"toggle_value": this.checked});}
+      toggler.onclick = function () {
+        chrome.storage.local.set({"toggle_value": this.checked});
+        let to_update = document.getElementsByClassName("hideable");
+
+        for (let i = 0; i < to_update.length; i++) {
+          if (this.checked) {
+            to_update.item(i).style.display = "none";
+          } else {
+            to_update.item(i).style.display = "inline-flex";
+          }
+        }
+      }
     })
 
     // Get the input text for the article suggestions
@@ -88,6 +99,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
             // Tick for Current site
             let cur_src = strip_url(tabs[0].url);
 
+            // Try to get current source's bias. If couldn't get, assume no bias (0)
             let cur_src_bias = 0;
             if (cur_src in url_dict) {
               cur_src_bias = url_dict[cur_src].bias;
@@ -137,59 +149,47 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
               // if we know bias of source (is in keys of biases_dict), show article
               if (source_url in url_dict) {
-                // If option is activated, select only articles that are sufficiently different than the current article
-                if (get_result.toggle_value == true && Math.abs(cur_src_bias - url_dict[source_url].bias) < average) {
-                  i++;
-                  continue;
+
+                // Get div for all sources with this bias
+                let bias_div = document.getElementById("div_" + url_dict[source_url].bias);
+                if (bias_div == null) {
+                  bias_div = document.createElement("DIV");
+                  bias_div.setAttribute("id", "div_" + url_dict[source_url].bias);
+                  bias_div.setAttribute("class", "src_results");
+                  bias_div.style.display = "none";
+                  bias_div.style.height = "inherit";
+                  bias_div.style.overflowY = "auto";
+                  container.appendChild(bias_div);
                 }
 
                 // try to get div with source's id, if doesn't exist, create it
-                // TODO: Fix this so sources with matching biases don't overlap
                 let source_div = document.getElementById(source);
                 if (source_div == null) {
                   // If it doesn't exist, create it
                   source_div = document.createElement("DIV");
                   source_div.setAttribute("id", source);
-                  source_div.setAttribute("class", "src_results");
-                  source_div.style.display = "none";
-                  source_div.style.height = "inherit";
-                  source_div.style.overflowY = "auto";
+                  source_div.style.overflowY = "auto"; // TODO: make overflowY hidden?
+                  bias_div.appendChild(source_div);
 
-                  // Source name
+                  // Add source name to source_div
                   let source_h = document.createElement("H2");
                   source_h.setAttribute("class", "src_name");
                   source_h.innerHTML = source;
+                  source_div.appendChild(source_h);
 
-                  // Hold source quality
+                  // Add source quality (with font color) to source_div
                   let source_q = document.createElement("P");
                   source_q.setAttribute("class", "src_qual");
                   source_q.innerHTML = "Quality:&nbsp;&nbsp;";
-
-                  // Color
                   let color = get_color(url_dict[source_url].quality);
                   let r = color[0]; 
                   let g = color[1]; 
                   let b = color[2];
                   source_q.innerHTML += parse("<span style='color:rgba(%s,%s,%s);'>", r, g, b) + url_dict[source_url].quality + "</span>";
-
-                  source_div.appendChild(source_h);
                   source_div.appendChild(source_q);
-                  container.appendChild(source_div);
-
-                  // Create tick for source on spectrum bar
-                  let tick = document.createElement("DIV");  // put icon along spectrum bar
-                  tick.setAttribute("id", source + "_bar");
-                  tick.setAttribute("class", "tick");
-                  tick.style =  "width: 3px;\
-                                height: 15px;\
-                                background-color: #8c8c8c;\
-                                display: inline-flex;\
-                                position: absolute;\
-                                left: " + position_from_bias(url_dict[source_url].bias) + "\%;";
-                  bar.appendChild(tick);
                 }
 
-                // Create element for article
+                // Create element for article, append to source_div
                 let node = document.createElement("P");
                 node.setAttribute("class", "article");
                 let time = result[i].publishedAt.match(/(.*)-(.*)-(.*)T(.*):(.*):(.*)Z/);
@@ -200,7 +200,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
                             + "<p class='description'><i>" + time + "</i>&nbsp;&nbsp;-&nbsp;"
                             + result[i].description + "</p>";
                 node.innerHTML = text;
-
                 function open_url(logged_url) {
                   // Record Time of Icon Click
                   chrome.storage.local.get(["events"], (res) => {
@@ -214,6 +213,29 @@ document.addEventListener("DOMContentLoaded", (event) => {
                 }
                 node.addEventListener("click", open_url.bind(null, result[i].url));
                 source_div.appendChild(node);
+
+                // Get tick for bias on spectrum bar, or create it if doesn't exist
+                let tick = document.getElementById("tick_" + url_dict[source_url].bias);
+                if (tick == null) {
+                  tick = document.createElement("DIV");  // put icon along spectrum bar
+                  tick.setAttribute("id", "tick_" + url_dict[source_url].bias);
+                  tick.setAttribute("class", "tick");
+                  tick.style =  "width: 3px;\
+                                height: 15px;\
+                                background-color: #8c8c8c;\
+                                display: inline-flex;\
+                                position: absolute;\
+                                left: " + position_from_bias(url_dict[source_url].bias) + "\%;";
+                  bar.appendChild(tick);
+                }
+                
+                // If bias of tick is not far enough from current source, make it hideable
+                if (Math.abs(cur_src_bias - url_dict[source_url].bias) < average) {
+                  tick.classList.add("hideable");
+                  if (get_result.toggle_value) {
+                    tick.style.display = "none";
+                  }
+                }
               }
 
               found_match = true;
@@ -272,9 +294,9 @@ var tick_mouseover = function () {
 
   // get name of news source to show, and show only results for that news source
   let tick_id = this.getAttribute("id");
-  let source = tick_id.substring(0, tick_id.length - 4);
-  let source_div = document.getElementById(source);
-  source_div.style.display = "block";
+  let selected_bias = tick_id.substring(5);
+  let selected_bias_div = document.getElementById("div_" + selected_bias);
+  selected_bias_div.style.display = "block";
 
   // Record Time of Hover Tick
   chrome.storage.local.get(["events"], (res) => {

@@ -100,3 +100,43 @@ img {
   position: absolute;
   right: 50%;
 } */
+
+
+/* Styling the Toggle Checkmark */
+.toggle_container {
+  display: block;
+  position: relative;
+  padding-left: 25px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  width: 150px;
+}
+
+/* Hide the browser's default checkbox */
+.toggle_container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* Create a custom checkbox */
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 17px;
+  width: 17px;
+  background-color: #AFAFAF;
+}
+
+/* On mouse-over, add a grey background color */
+.toggle_container:hover input ~ .checkmark {
+  background-color: #808080;
+}
+
+/* When the checkbox is checked, add a blue background */
+.toggle_container input:checked ~ .checkmark {
+  background-color: #2196F3;
+}
