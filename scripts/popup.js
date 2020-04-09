@@ -64,6 +64,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
           // get array of articles
           articles = obj.articles;
+          
+          let title_unique = format_title(title, bg);
 
           // count number of word matches in target title to each article result
           let counts = [];
@@ -75,7 +77,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
             // for each unique word in the title, check if in article
             let count = 0;
-            let title_unique = format_title(title, bg);
             title_unique.forEach((title_word) => {
               if (text.includes(title_word)) {
                 count = count + 1;
