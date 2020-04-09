@@ -38,16 +38,23 @@ document.addEventListener("DOMContentLoaded", (event) => {
       // Check if the user had custom text input from a right click
       textHighlight = res["highlightedText"];
       if (textHighlight) {
-        title = textHighlight;
+        title = clean_title(textHighlight, bg);
         chrome.storage.local.set({"highlightedText": ""});
       } else {
         // User did not have custom text input, so get the tab title
-        title = tabs[0].title;
-      }
-      title = clean_title(title, bg);
-      if (bg && debug) {
-        bg.console.log("Tab title: " + title);
-        bg.console.log("URL: " + tabs[0].url);
+        title = clean_title(tabs[0].title, bg)
+
+        // Append the text of the body
+        fetch(get_body_text(tabs[0].url)).then((response) => {
+          response.json().then((obj) => {
+            let content = obj.response.content;
+            title += ' ' + format_body(content);
+
+            if (bg && debug) {
+              bg.console.log('Title and body appended: ' + title);
+            }
+          });
+        });
       }
 
       // search news for keywords in title
@@ -133,7 +140,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
             let found_match = false;
             // for all articles with 3 or more matching keywords
-            while (counts[i] > 2) {
+            while (counts[i] > 2) { // TODO: We may want to change this number
               // get source name and id
               var source = result[i].source['name'];
               var source_id = result[i].source['id'];
@@ -182,8 +189,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
                   source_q.setAttribute("class", "src_qual");
                   source_q.innerHTML = "Quality:&nbsp;&nbsp;";
                   let color = get_color(url_dict[source_url].quality);
-                  let r = color[0]; 
-                  let g = color[1]; 
+                  let r = color[0];
+                  let g = color[1];
                   let b = color[2];
                   source_q.innerHTML += parse("<span style='color:rgba(%s,%s,%s);'>", r, g, b) + url_dict[source_url].quality + "</span>";
                   source_div.appendChild(source_q);
@@ -228,7 +235,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
                                 left: " + position_from_bias(url_dict[source_url].bias) + "\%;";
                   bar.appendChild(tick);
                 }
-                
+
                 // If bias of tick is not far enough from current source, make it hideable
                 if (Math.abs(cur_src_bias - url_dict[source_url].bias) < average) {
                   tick.classList.add("hideable");
@@ -375,40 +382,50 @@ function get_request(title) {
 }
 
 
+// Get extracted text from the body of the article
+function get_body_text(input_url) {
+  let url = 'http://boilerpipe-web.appspot.com/extract?'
+    + 'output=json&'
+    + 'extractor=ArticleExtractor&'
+    + 'url=' + input_url
+
+  return new Request(url);
+}
+
 // Get title with only unique words
 function format_title(title, bg) {
   // only unique words in title with stopwords removed
   let stopwords = [
-    "about", "a", "above", "above", "across", "after", "afterwards", "again", "against", "all", 
-    "almost", "alone", "along", "already", "also","although","always","am","among", "amongst", 
-    "amoungst", "amount",  "an", "and", "another", "any","anyhow","anyone","anything","anyway", 
-    "anywhere", "are", "around", "as",  "at", "back","be","became", "because","become","becomes", 
-    "becoming", "been", "before", "beforehand", "behind", "being", "below", "beside", "besides", 
-    "between", "beyond", "bill", "both", "bottom","but", "by", "call", "can", "cannot", "cant", 
-    "co", "con", "could", "couldnt", "cry", "de", "describe", "detail", "do", "done", "down", 
-    "due", "during", "each", "eg", "eight", "either", "eleven","else", "elsewhere", "empty", 
-    "enough", "etc", "even", "ever", "every", "everyone", "everything", "everywhere", "except", 
-    "few", "fifteen", "fify", "fill", "find", "fire", "first", "five", "for", "former", 
+    "about", "a", "above", "above", "across", "after", "afterwards", "again", "against", "all",
+    "almost", "alone", "along", "already", "also","although","always","am","among", "amongst",
+    "amoungst", "amount",  "an", "and", "another", "any","anyhow","anyone","anything","anyway",
+    "anywhere", "are", "around", "as",  "at", "back","be","became", "because","become","becomes",
+    "becoming", "been", "before", "beforehand", "behind", "being", "below", "beside", "besides",
+    "between", "beyond", "bill", "both", "bottom","but", "by", "call", "can", "cannot", "cant",
+    "co", "con", "could", "couldnt", "cry", "de", "describe", "detail", "do", "done", "down",
+    "due", "during", "each", "eg", "eight", "either", "eleven","else", "elsewhere", "empty",
+    "enough", "etc", "even", "ever", "every", "everyone", "everything", "everywhere", "except",
+    "few", "fifteen", "fify", "fill", "find", "fire", "first", "five", "for", "former",
     "formerly", "forty", "found", "four", "from", "front", "full", "further", "get", "give", "go",
-    "had", "has", "hasnt", "have", "he", "hence", "her", "here", "hereafter", "hereby", "herein", 
-    "hereupon", "hers", "herself", "him", "himself", "his", "how", "however", "hundred", "ie", 
+    "had", "has", "hasnt", "have", "he", "hence", "her", "here", "hereafter", "hereby", "herein",
+    "hereupon", "hers", "herself", "him", "himself", "his", "how", "however", "hundred", "ie",
     "if", "in", "inc", "indeed", "interest", "into", "is", "it", "its", "itself", "keep", "last",
-    "latter", "latterly", "least", "less", "ltd", "made", "many", "may", "me", "meanwhile", 
+    "latter", "latterly", "least", "less", "ltd", "made", "many", "may", "me", "meanwhile",
     "might", "mill", "mine", "more", "moreover", "most", "mostly", "move", "much", "must", "my",
-    "myself", "name", "namely", "neither", "never", "nevertheless", "next", "nine", "no", 
-    "nobody", "none", "noone", "nor", "not", "nothing", "now", "nowhere", "of", "off", "often", 
-    "on", "once", "one", "only", "onto", "or", "other", "others", "otherwise", "our", "ours", 
+    "myself", "name", "namely", "neither", "never", "nevertheless", "next", "nine", "no",
+    "nobody", "none", "noone", "nor", "not", "nothing", "now", "nowhere", "of", "off", "often",
+    "on", "once", "one", "only", "onto", "or", "other", "others", "otherwise", "our", "ours",
     "ourselves", "out", "over", "own","part", "per", "perhaps", "please", "put", "rather", "re",
     "same", "see", "seem", "seemed", "seeming", "seems", "serious", "several", "she", "should",
-    "show", "side", "since", "sincere", "six", "sixty", "so", "some", "somehow", "someone", 
+    "show", "side", "since", "sincere", "six", "sixty", "so", "some", "somehow", "someone",
     "something", "sometime", "sometimes", "somewhere", "still", "such", "system", "take", "ten",
     "than", "that", "the", "their", "them", "themselves", "then", "thence", "there", "thereafter",
-    "thereby", "therefore", "therein", "thereupon", "these", "they", "thick", "thin", "third", 
+    "thereby", "therefore", "therein", "thereupon", "these", "they", "thick", "thin", "third",
     "this", "those", "though", "three", "through", "throughout", "thru", "thus", "to", "together",
-    "too", "top", "toward", "towards", "twelve", "twenty", "two", "un", "under", "until", "up", 
-    "upon", "us", "very", "via", "was", "we", "well", "were", "what", "whatever", "when", 
+    "too", "top", "toward", "towards", "twelve", "twenty", "two", "un", "under", "until", "up",
+    "upon", "us", "very", "via", "was", "we", "well", "were", "what", "whatever", "when",
     "whence", "whenever", "where", "whereafter", "whereas", "whereby", "wherein", "whereupon",
-    "wherever", "whether", "which", "while", "whither", "who", "whoever", "whole", "whom", 
+    "wherever", "whether", "which", "while", "whither", "who", "whoever", "whole", "whom",
     "whose", "why", "will", "with", "within", "without", "would", "yet", "you", "your", "yours",
     "yourself", "yourselves", "the"
   ];
@@ -425,6 +442,17 @@ function format_title(title, bg) {
   }
 
   return title_unique;
+}
+
+
+// Clean up the text of the body
+function format_body(body) {
+  // Clean the text content
+  clean_body = body.replace(/[^\w\s]/gi, '').toLowerCase();
+  // Remove the newlines
+  clean_body = clean_body.replace(/(\r\n|\n|\r)/gm," ");
+
+  return clean_body;
 }
 
 
