@@ -116,11 +116,14 @@ document.addEventListener("DOMContentLoaded", (event) => {
               }
 
               let cur_tick = document.createElement("DIV");
-              cur_tick.style =  "width: 3px;\
-                                height: 30px;\
-                                background-color: #ff00aa;\
+              cur_tick.title = "Current Source's Position";
+              cur_tick.style =  "width: 8px;\
+                                height: 8px;\
+                                border-radius: 8px;\
+                                background-color: #52139c;\
                                 display: inline-flex;\
                                 position: absolute;\
+                                top: 85px;\
                                 left: " + position_from_bias(cur_src_bias) + "\%;";
               bar.appendChild(cur_tick);
             } else {
