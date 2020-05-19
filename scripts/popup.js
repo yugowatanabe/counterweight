@@ -1,4 +1,4 @@
-var debug = true;
+var debug = false;
 
 // Initialize Popup
 document.addEventListener("DOMContentLoaded", (event) => {
@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
               let cur_tick = document.createElement("DIV");
               cur_tick.title = "Current Source's Position";
-              cur_tick.style =  "width: 8px;\
+              cur_tick.style = "width: 8px;\
                                 height: 8px;\
                                 border-radius: 8px;\
                                 background-color: #52139c;\
@@ -114,19 +114,10 @@ document.addEventListener("DOMContentLoaded", (event) => {
               }
             }
 
-            // Find the best estimate of the average bias distance from current article
-            let distances = [];
-            for (var j = 0; j < result.length; j++) {
-              let u = strip_url(result[j].url);
-              if (u in url_dict) {
-                distances.push(Math.abs(cur_src_bias - url_dict[u].bias));
-              }
-            }
-            let average = distances.reduce((a, b) => a + b) / distances.length;
-
             let found_match = false;
             // for all articles with 3 or more matching keywords
-            while (counts[i] > 2) { // TODO: We may want to change this number
+            while (i < counts.length) { // TODO: We may want to change this number
+              bg.console.log(i);
               // get source name and id
               var source = result[i].source['name'];
               var source_id = result[i].source['id'];
