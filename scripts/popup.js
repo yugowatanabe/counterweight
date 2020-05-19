@@ -123,7 +123,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
                                 background-color: #52139c;\
                                 display: inline-flex;\
                                 position: absolute;\
-                                top: 85px;\
+                                margin-top: 18px;\
                                 left: " + position_from_bias(cur_src_bias) + "\%;";
               bar.appendChild(cur_tick);
             } else {
