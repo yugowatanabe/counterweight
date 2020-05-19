@@ -1,5 +1,9 @@
 'use strict';
-let prev_percent = -1;
+try {
+  let prev_percent = -1;
+} catch (err) {
+  prev_percent = -1;
+}
 let diff = 5;
 
 let tracker = document.getElementById('percent-scroll-tracker');

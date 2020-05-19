@@ -1,4 +1,4 @@
-var debug = false;
+var debug = true;
 
 // Initialize Popup
 document.addEventListener("DOMContentLoaded", (event) => {
@@ -13,24 +13,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
       e.push([get_date_string(), "click", "popup"]);
       chrome.storage.local.set({"events": e});
     });
-
-    // Set Up toggle (Get current toggle setting, and set up onclick function)
-    let toggler = document.getElementById('toggle_article');
-    chrome.storage.local.get(['toggle_value'], (res) => {
-      toggler.checked = res.toggle_value;
-      toggler.onclick = function () {
-        chrome.storage.local.set({"toggle_value": this.checked});
-        let to_update = document.getElementsByClassName("hideable");
-
-        for (let i = 0; i < to_update.length; i++) {
-          if (this.checked) {
-            to_update.item(i).style.display = "none";
-          } else {
-            to_update.item(i).style.display = "inline-flex";
-          }
-        }
-      }
-    })
 
     // Get the input text for the article suggestions
     var title;
@@ -64,7 +46,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
           // get array of articles
           articles = obj.articles;
-          
+
           let title_unique = format_title(title, bg);
 
           // count number of word matches in target title to each article result
@@ -96,7 +78,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
           }
 
           // list results in popup.html, listed with bias
-          chrome.storage.local.get(['source_biases', 'url_dict', 'toggle_value'], (get_result) => {
+          chrome.storage.local.get(['source_biases', 'url_dict'], (get_result) => {
             let url_dict = get_result.url_dict;
 
             // div which holds the divs illustrating bar along spectrum per article
@@ -238,14 +220,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
                                 position: absolute;\
                                 left: " + position_from_bias(url_dict[source_url].bias) + "\%;";
                   bar.appendChild(tick);
-                }
-
-                // If bias of tick is not far enough from current source, make it hideable
-                if (Math.abs(cur_src_bias - url_dict[source_url].bias) < average) {
-                  tick.classList.add("hideable");
-                  if (get_result.toggle_value) {
-                    tick.style.display = "none";
-                  }
                 }
               }
 
