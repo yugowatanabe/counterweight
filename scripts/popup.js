@@ -182,7 +182,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
                 let text = "<img src='" + result[i].urlToImage + "' style=\"cursor: pointer;\">"
                             + "<b style=\"cursor: pointer;\">" + result[i].title + "</b>"
                             + "<p class='description'><i>" + time + "</i>&nbsp;&nbsp;-&nbsp;"
-                            + result[i].description + "</p>";
+                            + result[i].description.replace(/<\/?[^>]+(>|$)/g, "") + "</p>";
+                console.log(result[i]);
                 node.innerHTML = text;
                 function open_url(logged_url) {
                   // Record Time of Icon Click
