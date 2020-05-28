@@ -170,6 +170,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
                   let g = color[1];
                   let b = color[2];
                   source_q.innerHTML += parse("<span style='color:rgba(%s,%s,%s);'>", r, g, b) + url_dict[source_url].quality + "</span>";
+                  source_q.innerHTML += "&nbsp;&nbsp;Bias:&nbsp;&nbsp;" + get_bias(url_dict[source_url].bias);
                   source_div.appendChild(source_q);
                 }
 
@@ -310,6 +311,28 @@ function get_color(quality) {
               Math.round(color1[2] * w1 + color2[2] * w2)
             ];
   return rgb;
+}
+
+// Get bias description corresponding to number
+// https://gist.github.com/nsfyn55/848c305b2b593e0ea129caaffc6417cc
+function get_bias(bias) {
+  if (-35 <= bias && bias <= -30) {
+    return "Extreme Left";
+  } else if (-29 <= bias && bias <= -18) {
+    return "Left";
+  } else if (-17 <= bias && bias <= -6) {
+    return "Left Center";
+  } else if (-5 <= bias && bias <= 5) {
+    return "Least Biased";
+  } else if (6 <= bias && bias <= 17) {
+    return "Right Center";
+  } else if (18 <= bias && bias <= 30) {
+    return "Right";
+  } else if (31 <= bias && bias <= 35) {
+    return "Extreme Right";
+  } else {
+    return "N/A";
+  }
 }
 
 
