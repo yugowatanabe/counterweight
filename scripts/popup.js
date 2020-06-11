@@ -1,4 +1,4 @@
-var debug = true;
+var debug = false;
 
 // Initialize Popup
 document.addEventListener("DOMContentLoaded", (event) => {
@@ -53,13 +53,16 @@ document.addEventListener("DOMContentLoaded", (event) => {
             // get text of article (its title and description)
             let suggestion = article.title + " " + article.description;
             suggestion = suggestion.replace(/[^\w\s]/gi, '').toLowerCase();
+            suggestion = format_body(suggestion);
 
             // for each unique word in the title, check if in article
             let count = 0;
             // Get the text of both the source and destination articles and append them
+            title = format_title(title);
+            suggestion = format_title(suggestion);
             var vocabulary = title + " " + suggestion;
             // Get the distance between the two articles
-            count = ndistance(bow(title, vocabulary, bg), bow(suggestion, vocabulary, bg))
+            count = ndistance(bow(title, vocabulary, bg), bow(suggestion, vocabulary, bg));
 
             // save number of words in article matching target title
             counts.push(count);
@@ -424,12 +427,12 @@ function format_title(title, bg) {
   while (title_unique !== title_unique.replace(re, ' ')) {  // do until no more words left to replace
     title_unique = title_unique.replace(re, ' ');
   }
-  // title_unique = [...new Set(title_unique.split(" "))];
-  /*
+  //title_unique = [...new Set(title_unique.split(" "))];
+
   if (bg && debug) {
     bg.console.log(title_unique);
   }
-*/
+
   return title_unique;
 }
 
