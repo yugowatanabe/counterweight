@@ -2,7 +2,7 @@
 try {
   let prev_percent = -1;
 } catch (err) {
-  prev_percent = -1;
+  let prev_percent = -1;
 }
 let diff = 5;
 

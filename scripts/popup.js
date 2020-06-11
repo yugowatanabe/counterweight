@@ -1,15 +1,15 @@
-var debug = false;
+var debug = true;
 
 // Initialize Popup
 document.addEventListener("DOMContentLoaded", (event) => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
 
     // get background page for logging
-    bg = chrome.extension.getBackgroundPage();
+    var bg = chrome.extension.getBackgroundPage();
 
     // Record Time of Icon Click
     chrome.storage.local.get(["events"], (res) => {
-      e = res["events"];
+      let e = res["events"];
       e.push([get_date_string(), "click", "popup"]);
       chrome.storage.local.set({"events": e});
     });
@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
     var title;
     chrome.storage.local.get(["highlightedText"], (res) => {
       // Check if the user had custom text input from a right click
-      textHighlight = res["highlightedText"];
+      let textHighlight = res["highlightedText"];
       if (textHighlight) {
         title = clean_title(textHighlight, bg);
         chrome.storage.local.set({"highlightedText": ""});
@@ -45,33 +45,29 @@ document.addEventListener("DOMContentLoaded", (event) => {
         response.json().then((obj) => {
 
           // get array of articles
-          articles = obj.articles;
-
-          let title_unique = format_title(title, bg);
-
+          let articles = obj.articles;
           // count number of word matches in target title to each article result
           let counts = [];
           articles.forEach((article) => {
 
             // get text of article (its title and description)
-            let text = article.title + " " + article.description;
-            text = text.replace(/[^\w\s]/gi, '').toLowerCase();
+            let suggestion = article.title + " " + article.description;
+            suggestion = suggestion.replace(/[^\w\s]/gi, '').toLowerCase();
 
             // for each unique word in the title, check if in article
             let count = 0;
-            title_unique.forEach((title_word) => {
-              if (text.includes(title_word)) {
-                count = count + 1;
-              }
-            });
+            // Get the text of both the source and destination articles and append them
+            var vocabulary = title + " " + suggestion;
+            // Get the distance between the two articles
+            count = ndistance(bow(title, vocabulary, bg), bow(suggestion, vocabulary, bg))
 
             // save number of words in article matching target title
             counts.push(count);
           });
 
-          // sort articles according to number of matches (more matches, higher rank)
-          const result = articles.map((item, index) => [counts[index], item]).sort(([count1], [count2]) => count2 - count1).map(([, item]) => item);
-          counts = counts.sort((a, b) => {return b-a});  // sort counts
+          // sort articles according to number of matches (more matches, higher rank) in increasing order
+          const result = articles.map((item, index) => [counts[index], item]).sort(([count1], [count2]) => count1 - count2).map(([, item]) => item);
+          counts = counts.sort((a, b) => {return a - b});  // sort counts
           if (bg && debug) {
             bg.console.log(result);
             bg.console.log(counts);
@@ -115,9 +111,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
             }
 
             let found_match = false;
-            // for all articles with 3 or more matching keywords
-            while (i < counts.length) { // TODO: We may want to change this number
-              bg.console.log(i);
+            // Get top X closest matches
+            while (i < 30) { // TODO: We may want to change this number
               // get source name and id
               var source = result[i].source['name'];
               var source_id = result[i].source['id'];
@@ -188,7 +183,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
                 function open_url(logged_url) {
                   // Record Time of Icon Click
                   chrome.storage.local.get(["events"], (res) => {
-                    e = res["events"];
+                    let e = res["events"];
                     e.push([get_date_string(), "clicked_link", logged_url, tabs[0].url]);
                     chrome.storage.local.set({"events": e});
 
@@ -277,7 +272,7 @@ var tick_mouseover = function () {
 
   // Record Time of Hover Tick
   chrome.storage.local.get(["events"], (res) => {
-    e = res["events"];
+    let e = res["events"];
     e.push([get_date_string(), "hovered_tick", tick_id]);
     chrome.storage.local.set({"events": e});
   });
@@ -312,6 +307,7 @@ function get_color(quality) {
             ];
   return rgb;
 }
+
 
 // Get bias description corresponding to number
 // https://gist.github.com/nsfyn55/848c305b2b593e0ea129caaffc6417cc
@@ -428,11 +424,12 @@ function format_title(title, bg) {
   while (title_unique !== title_unique.replace(re, ' ')) {  // do until no more words left to replace
     title_unique = title_unique.replace(re, ' ');
   }
-  title_unique = [...new Set(title_unique.split(" "))];
+  // title_unique = [...new Set(title_unique.split(" "))];
+  /*
   if (bg && debug) {
     bg.console.log(title_unique);
   }
-
+*/
   return title_unique;
 }
 
@@ -440,7 +437,7 @@ function format_title(title, bg) {
 // Clean up the text of the body
 function format_body(body) {
   // Clean the text content
-  clean_body = body.replace(/[^\w\s]/gi, '').toLowerCase();
+  let clean_body = body.replace(/[^\w\s]/gi, '').toLowerCase();
   // Remove the newlines
   clean_body = clean_body.replace(/(\r\n|\n|\r)/gm," ");
 
@@ -476,4 +473,48 @@ function strip_url(u) {
 // map bias to a number between 0-84
 function position_from_bias(b) {
   return (b + 42) / 84 * 100;
+}
+
+
+// Bag of words
+function bow(text, vocabulary, bg) {
+  var vector = [];
+  var arr = text.split(' ');
+
+  var dict = {};
+  var keys = [];
+  var words;
+  arr.forEach(function (word) {
+    word = word.toLowerCase();
+    if (!dict[word] && word !== '') {
+      dict[word] = 1;
+      keys.push(word);
+    } else {
+      dict[word] += 1;
+    }
+  });
+
+  vocabulary.split(' ').forEach(function (word) {
+    vector.push(dict[word] || 0);
+  });
+  if (debug) {
+    bg.console.log(vector);
+  }
+
+  return vector;
+}
+
+
+// Euclidean distance between two n-dimensional points
+function ndistance(src, dest) {
+  var total = 0;
+  var diff = 0;
+
+  var arrayLength = src.length;
+  for (var i = 0; i < arrayLength; i++) {
+    diff = src[i] - dest[i];
+    total += diff * diff;
+  }
+
+  return Math.sqrt(total);
 }
