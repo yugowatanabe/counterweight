@@ -27,17 +27,17 @@
   "page_action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "images/balloon16.png",
-      "32": "images/balloon32.png",
-      "48": "images/balloon48.png",
-      "128": "images/balloon128.png"
+      "16": "images/scale16.png",
+      "32": "images/scale32.png",
+      "48": "images/scale48.png",
+      "128": "images/scale128.png"
     }
   },
   "icons": {
-    "16": "images/balloon16.png",
-    "32": "images/balloon32.png",
-    "48": "images/balloon48.png",
-    "128": "images/balloon128.png"
+    "16": "images/scale16.png",
+    "32": "images/scale32.png",
+    "48": "images/scale48.png",
+    "128": "images/scale128.png"
   },
   "manifest_version": 2
 }
