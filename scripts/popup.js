@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
                                 display: inline-flex;\
                                 position: absolute;\
                                 margin-top: 18px;\
-                                left: " + position_from_bias(cur_src_bias) + "\%;";
+                                left: " + (position_from_bias(cur_src_bias) - 0.3) + "\%;";
               bar.appendChild(cur_tick);
             } else {
               if (bg && debug) {
