@@ -366,3 +366,9 @@ function get_date_string() {
 //     });
 //   }
 // })
+
+function strip_url(u) {
+  u = u.split('://')[1];
+  u = u.split('/')[0];
+  return u;
+}
