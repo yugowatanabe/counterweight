@@ -186,6 +186,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
                   // Add source quality (with font color) to source_div
                   let source_q = document.createElement("P");
                   source_q.setAttribute("class", "src_qual");
+                  source_q.style.width = "35%"; // TODO: Adjust width
                   source_q.innerHTML = "Quality:&nbsp;&nbsp;";
                   let color = get_color(url_dict[source_url].quality);
                   let r = color[0];
@@ -193,6 +194,21 @@ document.addEventListener("DOMContentLoaded", (event) => {
                   let b = color[2];
                   source_q.innerHTML += parse("<span style='color:rgba(%s,%s,%s);'>", r, g, b) + url_dict[source_url].quality + "</span>";
                   source_q.innerHTML += "&nbsp;&nbsp;Bias:&nbsp;&nbsp;" + get_bias(url_dict[source_url].bias);
+                  source_q.addEventListener("mouseover", () => {
+                    help_div = document.createElement("DIV");
+                    help_div.innerHTML = "DEFINITIONS OF QUALITY AND BIAS"; // TODO: Insert Definitions/Explanations
+                    help_div.style = "left: 25px;\
+                                      width: 100px;\
+                                      size: 12px;\
+                                      position: absolute;\
+                                      border-radius: 3px;\
+                                      padding: 2px;\
+                                      background-color: #9c77c7";
+                    source_q.appendChild(help_div);
+                  })
+                  source_q.addEventListener("mouseout", () => {
+                    source_q.removeChild(source_q.lastChild);
+                  })
                   source_div.appendChild(source_q);
                 }
 
