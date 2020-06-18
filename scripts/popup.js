@@ -97,7 +97,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
               }
 
               let cur_tick = document.createElement("DIV");
-              cur_tick.title = "Current Source's Position";
               cur_tick.style = "width: 8px;\
                                 height: 8px;\
                                 border-radius: 8px;\
@@ -106,6 +105,23 @@ document.addEventListener("DOMContentLoaded", (event) => {
                                 position: absolute;\
                                 margin-top: 18px;\
                                 left: " + (position_from_bias(cur_src_bias) - 0.3) + "\%;";
+              cur_tick.addEventListener("mouseover", () => {
+                help_div = document.createElement("DIV");
+                help_div.innerHTML = "Current Article's Rating";
+                help_div.style = "left: 18px;\
+                                  size: 12px;\
+                                  position: absolute;\
+                                  border-radius: 3px;\
+                                  padding: 2px;\
+                                  background-color: #9c77c7";
+                cur_tick.appendChild(help_div);
+
+                cur_tick.style.backgroundColor = "#bd8cf5";
+              })
+              cur_tick.addEventListener("mouseout", () => {
+                cur_tick.removeChild(cur_tick.lastChild);
+                cur_tick.style.backgroundColor = "#52139c";
+              })
               bar.appendChild(cur_tick);
             } else {
               if (bg && debug) {
