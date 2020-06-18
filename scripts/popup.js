@@ -123,6 +123,14 @@ document.addEventListener("DOMContentLoaded", (event) => {
                 cur_tick.style.backgroundColor = "#52139c";
               })
               bar.appendChild(cur_tick);
+
+              // Add current source's bias to list of previous biases, used to
+              // display user's previous reading behavior
+              chrome.storage.local.get(["previous_article_biases"], (res) => {
+                let e = res["previous_article_biases"];
+                e.push(cur_src_bias);
+                chrome.storage.local.set({"previous_article_biases": e});
+              });
             } else {
               if (bg && debug) {
                 bg.console.log("Could not find bias: " + cur_src)

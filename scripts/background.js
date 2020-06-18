@@ -37,6 +37,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
       "highlightedText": "",
       "open_news": {},
       "current_page_url": "",
+      "previous_article_biases": [],
     });
 
   var sources_json;
