@@ -107,7 +107,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
                                 left: " + (position_from_bias(cur_src_bias) - 0.3) + "\%;";
               cur_tick.addEventListener("mouseover", () => {
                 help_div = document.createElement("DIV");
-                help_div.innerHTML = "Current Article's Rating";
+                help_div.innerHTML = "Current Source's Bias Rating";
                 help_div.style = "left: 18px;\
                                   size: 12px;\
                                   position: absolute;\
