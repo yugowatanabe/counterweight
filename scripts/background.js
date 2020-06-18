@@ -345,3 +345,24 @@ function get_date_string() {
 
   return `${year}/${month}/${day} ${hour}:${minute}:${second}`;
 }
+
+// Code to add url bias rating to chrome storage list "previous_article_biases"
+// TODO: Replace tabs[0].url
+// chrome.storage.local.get(['url_dict'], (res) => {
+//   let url_dict = res.url_dict;
+//   let cur_src = strip_url(tabs[0].url);
+//   // function strip_url(u) {
+//   //   u = u.split('://')[1];
+//   //   u = u.split('/')[0];
+//   //   return u;
+//   // }
+
+//   if (cur_src in url_dict) {
+//     cur_src_bias = url_dict[cur_src].bias;
+//     chrome.storage.local.get(["previous_article_biases"], (res) => {
+//       let e = res["previous_article_biases"];
+//       e.push(cur_src_bias);
+//       chrome.storage.local.set({"previous_article_biases": e});
+//     });
+//   }
+// })
