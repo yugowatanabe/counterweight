@@ -123,14 +123,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
                 cur_tick.style.backgroundColor = "#52139c";
               })
               bar.appendChild(cur_tick);
-
-              // Add current source's bias to list of previous biases, used to
-              // display user's previous reading behavior
-              chrome.storage.local.get(["previous_article_biases"], (res) => {
-                let e = res["previous_article_biases"];
-                e.push(cur_src_bias);
-                chrome.storage.local.set({"previous_article_biases": e});
-              });
             } else {
               if (bg && debug) {
                 bg.console.log("Could not find bias: " + cur_src)
@@ -186,29 +178,26 @@ document.addEventListener("DOMContentLoaded", (event) => {
                   // Add source quality (with font color) to source_div
                   let source_q = document.createElement("P");
                   source_q.setAttribute("class", "src_qual");
-                  source_q.style.width = "35%"; // TODO: Adjust width
+                  source_q.style.width = "50%"; // TODO: Adjust width
                   source_q.innerHTML = "Quality:&nbsp;&nbsp;";
                   let color = get_color(url_dict[source_url].quality);
                   let r = color[0];
                   let g = color[1];
                   let b = color[2];
                   source_q.innerHTML += parse("<span style='color:rgba(%s,%s,%s);'>", r, g, b) + url_dict[source_url].quality + "</span>";
-                  source_q.innerHTML += "&nbsp;&nbsp;Bias:&nbsp;&nbsp;" + get_bias(url_dict[source_url].bias);
-                  source_q.addEventListener("mouseover", () => {
-                    help_div = document.createElement("DIV");
-                    help_div.innerHTML = "DEFINITIONS OF QUALITY AND BIAS"; // TODO: Insert Definitions/Explanations
-                    help_div.style = "left: 25px;\
-                                      width: 100px;\
-                                      size: 12px;\
-                                      position: absolute;\
-                                      border-radius: 3px;\
-                                      padding: 2px;\
-                                      background-color: #9c77c7";
-                    source_q.appendChild(help_div);
+                  source_q.innerHTML += "&nbsp;&nbsp;Bias:&nbsp;&nbsp;" + get_bias(url_dict[source_url].bias) + "&nbsp;";
+                  let help_mark = document.createElement("SPAN");
+                  help_mark.innerHTML = "<sup>(?)</sup>";
+                  help_mark.addEventListener("click", () => {
+                    alert("DEFINITIONS"); // TODO: Update Definition
                   })
-                  source_q.addEventListener("mouseout", () => {
-                    source_q.removeChild(source_q.lastChild);
+                  help_mark.addEventListener("mouseover", () => {
+                    help_mark.style.textDecoration = "underline";
                   })
+                  help_mark.addEventListener("mouseout", () => {
+                    help_mark.style.textDecoration = "none";
+                  })
+                  source_q.appendChild(help_mark);
                   source_div.appendChild(source_q);
                 }
 

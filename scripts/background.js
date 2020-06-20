@@ -161,9 +161,10 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
       }
 
       // Check if the current URL of the tab is a news source
-      chrome.storage.local.get(["events"], function(result) {
+      chrome.storage.local.get(["events", "url_dict"], function(result) {
         var changed = false;
         e = result["events"];
+        let url_dict = result.url_dict;
         if (res["source_urls"].includes(old_url)) {
             // Log that user is leaving old tab
             e.push([get_date_string(), "closed_news_site", res["current_page_url"]]);
@@ -172,6 +173,15 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
         if (res["source_urls"].includes(new_url)) {
           e.push([get_date_string(), "entering_news_tab", tab.url]);  // new tab is news tab
           changed = true;
+
+          if (new_url in url_dict) {
+            cur_src_bias = url_dict[new_url].bias;
+            chrome.storage.local.get(["previous_article_biases"], (res) => {
+              let prev_article_biases = res["previous_article_biases"];
+              prev_article_biases.push(cur_src_bias);
+              chrome.storage.local.set({"previous_article_biases": prev_article_biases});
+            });
+        }
         }
         if (changed) {
           chrome.storage.local.set({"events": e, "current_page_url": tab.url});
@@ -222,9 +232,10 @@ chrome.tabs.onActivated.addListener(function(info) {
       }
 
       // Check if the current URL of the tab is a news source
-      chrome.storage.local.get(["events"], function(result) {
+      chrome.storage.local.get(["events", "url_dict"], function(result) {
         var changed = false;
         e = result["events"];
+        let url_dict = result.url_dict;
         if (res["source_urls"].includes(old_url)) {
             // Log that user is leaving old tab
             e.push([get_date_string(), "leaving_news_tab", res["current_page_url"]]);
@@ -233,6 +244,15 @@ chrome.tabs.onActivated.addListener(function(info) {
         if (res["source_urls"].includes(new_url)) {
           e.push([get_date_string(), "entering_news_tab", tabs[0].url]);  // new tab is news tab
           changed = true;
+
+          if (new_url in url_dict) {
+              cur_src_bias = url_dict[new_url].bias;
+              chrome.storage.local.get(["previous_article_biases"], (res) => {
+                let prev_article_biases = res["previous_article_biases"];
+                prev_article_biases.push(cur_src_bias);
+                chrome.storage.local.set({"previous_article_biases": prev_article_biases});
+              });
+          }
         }
         if (changed) {
           chrome.storage.local.set({"events": e, "current_page_url": tabs[0].url});
@@ -344,31 +364,4 @@ function get_date_string() {
   var tz_offset = d.getTimezoneOffset();
 
   return `${year}/${month}/${day} ${hour}:${minute}:${second}`;
-}
-
-// Code to add url bias rating to chrome storage list "previous_article_biases"
-// TODO: Replace tabs[0].url
-// chrome.storage.local.get(['url_dict'], (res) => {
-//   let url_dict = res.url_dict;
-//   let cur_src = strip_url(tabs[0].url);
-//   // function strip_url(u) {
-//   //   u = u.split('://')[1];
-//   //   u = u.split('/')[0];
-//   //   return u;
-//   // }
-
-//   if (cur_src in url_dict) {
-//     cur_src_bias = url_dict[cur_src].bias;
-//     chrome.storage.local.get(["previous_article_biases"], (res) => {
-//       let e = res["previous_article_biases"];
-//       e.push(cur_src_bias);
-//       chrome.storage.local.set({"previous_article_biases": e});
-//     });
-//   }
-// })
-
-function strip_url(u) {
-  u = u.split('://')[1];
-  u = u.split('/')[0];
-  return u;
 }
