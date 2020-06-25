@@ -12,12 +12,6 @@
     "http://*/",
     "https://*/"
   ],
-  "oauth2": {
-    "client_id": "627474095536-ss1hfl9glimugj5uvghfi0e0eda793kj.apps.googleusercontent.com",
-    "scopes": [
-        "https://www.googleapis.com/auth/userinfo.email"
-    ]
-  },
   "background": {
     "scripts": ["scripts/background.js"],
     "persistent": false

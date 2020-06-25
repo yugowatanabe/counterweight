@@ -189,7 +189,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
                   let help_mark = document.createElement("SPAN");
                   help_mark.innerHTML = "<sup>(?)</sup>";
                   help_mark.addEventListener("click", () => {
-                    alert("DEFINITIONS"); // TODO: Update Definition
+                    alert("Quality represents the reputability of the news source. Bias indicates how far left or right the news source is rated according to Media Bias/Fact Check.\n(https://mediabiasfactcheck.com/)"); // TODO: Update Definition
                   })
                   help_mark.addEventListener("mouseover", () => {
                     help_mark.style.textDecoration = "underline";
