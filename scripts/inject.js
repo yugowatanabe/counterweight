@@ -1,4 +1,4 @@
-'use strict';
+// 'use strict';
 try {
   let prev_percent = -1;
 } catch (err) {
@@ -24,7 +24,7 @@ if (tracker === null) {
     window.addEventListener('scroll', tracker.setPercentage, true);
     window.addEventListener('resize', tracker.setPercentage, true);
   } catch (err) {
-    console.err('Failed to load percent-scroll widget:', err.message);
+    console.log('Failed to load percent-scroll widget:', err.message);
   }
 }
 else {
