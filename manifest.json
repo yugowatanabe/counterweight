@@ -16,7 +16,7 @@
     "scripts": ["scripts/background.js"],
     "persistent": false
   },
-  "page_action": {
+  "browser_action": {
     "default_popup": "popup.html",
     "default_icon": {
       "16": "images/scale16.png",
