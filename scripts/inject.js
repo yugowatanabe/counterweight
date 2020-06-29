@@ -1,4 +1,4 @@
-// 'use strict';
+'use strict';
 try {
   let prev_percent = -1;
 } catch (err) {
