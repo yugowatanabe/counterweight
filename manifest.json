@@ -1,6 +1,6 @@
 {
   "name": "CounterWeight",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Discover different persepectives on an event across news sources.",
   "permissions": [
     "activeTab",
