@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
             let found_match = false;
             // Get top X closest matches
-            while (i < 30) { // TODO: We may want to change this number
+            while (i < result.length && i < 100) { // TODO: We may want to change this number
               // get source name and id
               var source = result[i].source['name'];
               var source_id = result[i].source['id'];
@@ -403,6 +403,8 @@ function get_request(title) {
     + 'pageSize=100&'
     + 'page=1&'
     + 'apiKey=fa8935c3814f48b7b2f28bf8d43b1d69';
+    // ERIC: cf362f6104bc4ae183ea4e10b4742978
+    // YUGO: afb1d15f19724f608492f69997c94820
 
   return new Request(url);
 }
