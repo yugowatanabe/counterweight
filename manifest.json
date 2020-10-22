@@ -1,6 +1,6 @@
 {
-  "name": "Counterweight: balance you news consumption",
-  "version": "1.0.3",
+  "name": "Counterweight: balance your news consumption",
+  "version": "1.0.4",
   "description": "Discover different persepectives on an event across news sources.",
   "permissions": [
     "activeTab",

@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
         title = clean_title(tabs[0].title, bg)
 
         // Append the text of the body
-        fetch(get_body_text(tabs[0].url)).then((response) => {
+        var callback = fetch(get_body_text(tabs[0].url)).then((response) => {
           response.json().then((obj) => {
             let content = obj.response.content;
             title += ' ' + format_body(content);
@@ -37,6 +37,9 @@ document.addEventListener("DOMContentLoaded", (event) => {
             }
           });
         });
+
+        console.log('waiting');
+        setTimeout(callback, 2000);
       }
 
       // search news for keywords in title
@@ -396,7 +399,7 @@ function get_request(title) {
     + 'sortBy=relevancy&'
     + 'pageSize=100&'
     + 'page=1&'
-    + 'apiKey=afb1d15f19724f608492f69997c94820';
+    + 'apiKey=fa8935c3814f48b7b2f28bf8d43b1d69';
 
   return new Request(url);
 }
