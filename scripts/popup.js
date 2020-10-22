@@ -45,8 +45,11 @@ document.addEventListener("DOMContentLoaded", (event) => {
       // search news for keywords in title
       // handle the JSON object returned containing articles
       fetch(get_request(title)).then((response) => {
-        response.json().then((obj) => {
 
+        response.json().then((obj) => {
+          if (obj.status != "ok") {
+            alert("Internal failure - please contact Eric or James.")
+          }
           // get array of articles
           let articles = obj.articles;
           // count number of word matches in target title to each article result
